@@ -94,7 +94,7 @@ function createApp(config = {}) {
 
   function publicState() {
     const paidPlayers = state.players.filter(player => player.paid);
-    const currentPlayer = paidPlayers.length ? paidPlayers[state.turnIndex % paidPlayers.length] : null;
+    const currentPlayer = state.players.length ? state.players[state.turnIndex % state.players.length] : null;
     return {
       round: state.round,
       entryFeeRiel: ENTRY_FEE_RIEL,
@@ -398,20 +398,20 @@ function createApp(config = {}) {
     if (req.method === "POST" && pathname === "/api/spin") {
       const body = await readJson(req);
       const paidPlayers = state.players.filter(player => player.paid);
-      if (!paidPlayers.length) {
-        sendError(res, 409, "At least one participant must have a host-confirmed 500៛ payment before spinning.");
+      if (!state.players.length) {
+        sendError(res, 409, "Add at least one player before spinning.");
         return;
       }
       if (state.pendingAdvance) {
         sendError(res, 409, "Finish the current player action before spinning again.");
         return;
       }
-      const player = paidPlayers[state.turnIndex % paidPlayers.length];
+      const player = state.players[state.turnIndex % state.players.length];
       if (body.playerId !== player.id) {
         sendError(res, 409, "The turn has changed. Refresh the game before spinning.");
         return;
       }
-      const availableOutcomeIds = OUTCOME_IDS.filter(id => id !== "money" || !state.payout);
+      const availableOutcomeIds = OUTCOME_IDS.filter(id => id !== "money" || (paidPlayers.length > 0 && !state.payout));
       const selectedIndex = selectIndex(availableOutcomeIds.length);
       const outcomeId = availableOutcomeIds[selectedIndex];
       if (!outcomeId || !OUTCOME_IDS.includes(outcomeId)) {

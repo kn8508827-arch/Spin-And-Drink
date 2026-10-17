@@ -39,7 +39,7 @@ canvas#wheel{width:92vw;max-width:760px;height:auto;border-radius:50%;display:bl
 .player-chip.current{border-color:#f6c85f;background:rgba(246,200,95,.16)}
 .player-chip small{color:#d9e8f7}
 .empty-players{margin:8px 0 0;color:#d9e8f7;font-size:14px}
-.payment-note{margin:10px 0 0;color:#d3e5f6;font-size:13px;line-height:1.5}
+.game-note{margin:10px 0 0;color:#d3e5f6;font-size:13px;line-height:1.5}
 .pool-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
 .pool-stat{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 13px;border-radius:12px;background:rgba(4,23,44,.42);color:#eaf4ff}
 .pool-stat strong{color:#f8d77f;font-size:18px}
