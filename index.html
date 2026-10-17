@@ -4,111 +4,251 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#10264a">
-<title>Lucky Party Wheel</title>
+<meta name="description" content="កង់សំណាងសម្រាប់លេងជាមួយមិត្តភក្តិ។ មានច្បាប់ស្មោះ អត់ស្មោះ និងសន្លឹកសំណាង។">
+<title>កង់សំណាងជាក្រុម</title>
 <style>
-:root{--navy:#10264a;--blue:#1768ac;--gold:#f3c969;--cream:#fff9ec;--ink:#17233b;--muted:#64748b}
+:root{--navy:#10264a;--navy2:#173d6b;--blue:#1768ac;--gold:#f3c969;--cream:#fff9ec;--ink:#17233b;--muted:#64748b;--line:#e7eaf0;--green:#198b70;--red:#bd4d43}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Noto Sans Khmer",sans-serif;color:var(--ink);background:radial-gradient(circle at top,#254d7e 0,#10264a 48%,#08162d 100%);padding:22px 14px 36px}
-.wrap{max-width:780px;margin:0 auto}
-header{text-align:center;color:white;margin:5px 0 20px}
-.logo{font-size:42px;line-height:1.2}
-h1{font-size:clamp(26px,6vw,38px);margin:8px 0 5px;color:var(--gold)}
-header p{margin:0;color:#e3ecfa;font-size:15px}
-.panel{background:var(--cream);border-radius:24px;padding:clamp(16px,4vw,28px);box-shadow:0 18px 48px #0005}
-.wheel-wrap{width:min(84vw,390px);margin:0 auto 18px;position:relative;aspect-ratio:1}
-canvas{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 13px #0002)}
-.pointer{position:absolute;z-index:2;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:38px solid #fff;filter:drop-shadow(0 3px 3px #0005)}
-.center-cap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border:5px solid #fff;border-radius:50%;background:linear-gradient(135deg,#ffd979,#d69a25);display:grid;place-items:center;font-size:29px;box-shadow:0 3px 12px #0003;pointer-events:none}
-button{border:0;border-radius:14px;padding:14px 18px;font:700 16px inherit;cursor:pointer;transition:transform .12s,opacity .12s}
-button:active{transform:scale(.98)}
-#spin{width:100%;background:linear-gradient(100deg,#f6d47d,#e9ae39);color:#2a1b00;font-size:18px;box-shadow:0 5px 0 #b67b17;margin:4px 0 16px}
-#spin:disabled{opacity:.6;cursor:wait}
-.result{background:#eaf2ff;border:1px solid #d2e3ff;border-radius:18px;padding:16px;text-align:center;min-height:100px}
-.result small{display:block;color:var(--muted);font-weight:700;margin-bottom:5px}
-#resultTitle{font-size:23px;font-weight:800;color:var(--navy);margin-bottom:4px}
-#resultDesc{font-size:14px;color:#465775}
+body{margin:0;min-height:100vh;font-family:"Noto Sans Khmer","Khmer OS System",system-ui,-apple-system,sans-serif;color:var(--ink);background:radial-gradient(circle at 50% -8%,#3c71a6 0,#17395f 38%,#0b1b35 78%);padding:20px 14px 34px}
+button,input{font:inherit}
+button{border:0;border-radius:14px;padding:12px 16px;font-weight:750;cursor:pointer;transition:transform .12s,filter .15s,opacity .15s}
+button:hover{filter:brightness(1.04)}button:active{transform:scale(.98)}button:disabled{opacity:.56;cursor:wait}
+button:focus-visible,input:focus-visible{outline:3px solid #2879cb;outline-offset:3px}
+.wrap{max-width:800px;margin:0 auto}
+header{position:relative;text-align:center;color:#fff;margin:4px 0 18px;padding:8px 54px 0}
+.logo{font-size:40px;line-height:1.15;filter:drop-shadow(0 3px 4px #0005)}
+h1{font-size:clamp(26px,6vw,39px);line-height:1.35;margin:7px 0 2px;color:var(--gold);text-shadow:0 2px 0 #80541c,0 4px 12px #0006}
+header p{margin:4px 0 0;color:#e3ecfa;font-size:15px}
+#soundToggle{position:absolute;top:4px;right:0;width:46px;height:46px;padding:0;border-radius:50%;background:linear-gradient(145deg,#2b91db,#1261aa);color:#fff;font-size:22px;box-shadow:0 4px 12px #0004}
+.panel{background:var(--cream);border:1px solid #ffefc7;border-radius:25px;padding:clamp(15px,4vw,28px);box-shadow:0 18px 48px #0005}
+.players{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:18px}
+.section-heading{display:flex;align-items:center;gap:8px;font-size:17px;margin:0 0 10px;color:var(--navy)}
+.player-form{display:flex;gap:8px}
+.player-form input,.command-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:12px;padding:11px 12px;background:#fff;color:var(--ink)}
+.player-form button{background:var(--navy);color:#fff;white-space:nowrap;padding-inline:17px}
+.player-tip{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
+.player-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.player-chip{display:flex;align-items:center;gap:7px;border:1px solid #d8e5f5;border-radius:999px;background:#f1f7ff;padding:6px 7px 6px 11px;font-size:13px}
+.player-chip.current{border-color:#dfb13e;background:#fff3cc;box-shadow:0 0 0 2px #f3c96944}
+.player-chip small{color:#5d6f86;white-space:nowrap}
+.remove-player{width:25px;height:25px;padding:0;border-radius:50%;background:#e7edf5;color:#42536a;font-size:16px;line-height:1}
+.turn-note{margin-top:10px;font-size:13px;color:#43546d;font-weight:650}
+.wheel-wrap{width:min(82vw,390px);margin:0 auto 16px;position:relative;aspect-ratio:1}
+canvas{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 13px #0003)}
+.pointer{position:absolute;z-index:2;top:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:17px solid transparent;border-right:17px solid transparent;border-top:37px solid #fff;filter:drop-shadow(0 3px 3px #0006)}
+.center-cap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:72px;height:72px;border:5px solid #fff;border-radius:50%;background:linear-gradient(135deg,#ffe18a,#d69a25);display:grid;place-items:center;font-size:27px;box-shadow:0 3px 12px #0004;pointer-events:none}
+#spin{width:100%;background:linear-gradient(100deg,#f6d47d,#e9ae39);color:#2a1b00;font-size:18px;box-shadow:0 5px 0 #b67b17;margin:3px 0 16px}
+#spin:disabled{opacity:.65}
+.result{background:#eaf2ff;border:1px solid #d2e3ff;border-radius:18px;padding:16px;text-align:center;min-height:105px;transition:background .2s,box-shadow .2s}
+.result.pop{animation:result-pop .42s ease-out}
+@keyframes result-pop{0%{transform:scale(.98);box-shadow:0 0 0 #f3c96900}55%{transform:scale(1.015);box-shadow:0 0 24px #f3c969aa}100%{transform:scale(1);box-shadow:0 0 0 #f3c96900}}
+.result small{display:block;color:var(--muted);font-weight:750;margin-bottom:5px}
+#resultTitle{font-size:clamp(19px,5vw,24px);font-weight:850;color:var(--navy);margin-bottom:4px}
+#resultDesc{font-size:14px;line-height:1.7;color:#465775}
+.action-area:empty{display:none}
+.action-area{margin-top:10px;text-align:left}
+.command-form{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.command-form label{display:block;width:100%;font-size:13px;font-weight:700;color:var(--navy)}
+.command-form button,.secondary-button{background:var(--navy);color:white}
+.action-hint{font-size:13px;color:#52637a;line-height:1.6;margin:8px 0}
+.action-done{color:#17684f;font-weight:750}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
-.item{background:#fff;border:1px solid #e7eaf0;border-radius:14px;padding:11px 12px;min-height:82px}
-.item strong{display:block;font-size:15px;margin-bottom:3px}
-.item span{display:block;font-size:12px;color:var(--muted);line-height:1.45}
-.footer{color:#d9e6f7;text-align:center;font-size:12px;line-height:1.7;margin:18px auto 0;max-width:620px}
-@media(max-width:430px){body{padding:16px 10px 28px}.grid{gap:8px}.item{padding:10px}.item strong{font-size:14px}.center-cap{width:64px;height:64px;font-size:24px}}
+.item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 12px;min-height:82px}
+.item strong{display:block;font-size:15px;margin-bottom:3px;color:#1d3150}
+.item span{display:block;font-size:12px;color:var(--muted);line-height:1.55}
+.footer{color:#e1eaf7;text-align:center;font-size:12px;line-height:1.8;margin:16px auto 0;max-width:680px}
+@media(max-width:440px){body{padding:14px 10px 26px}.grid{gap:8px}.item{padding:10px;min-height:78px}.item strong{font-size:14px}.center-cap{width:62px;height:62px;font-size:23px}.wheel-wrap{width:min(86vw,360px)}.player-form button{padding-inline:12px}header{padding-inline:42px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="logo">🎉 🍀 🎡</div><h1>Lucky Party Wheel</h1><p>បង្វិលសំណាង • លេងសប្បាយជាមួយមិត្តភក្តិ</p></header>
+<header>
+  <div class="logo" aria-hidden="true">🎉 🍀 🎡</div>
+  <h1>កង់សំណាងជាក្រុម</h1>
+  <p>បង្វិលវេនគ្នា លេងសប្បាយជាមួយមិត្តភក្តិ</p>
+  <button id="soundToggle" type="button" aria-label="បិទសំឡេង" title="បិទសំឡេង">🔊</button>
+</header>
 <main class="panel">
-<div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel" width="900" height="900" aria-label="កង់បង្វិលសកម្មភាព"></canvas><div class="center-cap">🎡</div></div>
-<button id="spin">🎯 បង្វិលកង់ឥឡូវនេះ</button>
-<section class="result" aria-live="polite"><small>លទ្ធផលរបស់អ្នក</small><div id="resultTitle">ត្រៀមខ្លួនហើយឬនៅ? 😄</div><div id="resultDesc">ចុចប៊ូតុងខាងលើ ដើម្បីចាប់ផ្តើមលេង</div></section>
-<div class="grid" id="legend"></div>
+  <section class="players" aria-labelledby="playersHeading">
+    <h2 class="section-heading" id="playersHeading">👥 អ្នកលេង</h2>
+    <form class="player-form" id="playerForm">
+      <input id="playerName" type="text" maxlength="24" autocomplete="off" placeholder="បញ្ចូលឈ្មោះអ្នកលេង" aria-label="ឈ្មោះអ្នកលេងថ្មី">
+      <button type="submit">បន្ថែម</button>
+    </form>
+    <p class="player-tip">បន្ថែមឈ្មោះ ដើម្បីប្ដូរវេនគ្នា និងកំណត់អ្នកដែលត្រូវផឹក។ ឈ្មោះ និងសន្លឹកសំណាងត្រូវបានរក្សាទុកក្នុងឧបករណ៍នេះ។</p>
+    <div class="player-list" id="playerList" aria-live="polite"></div>
+    <div class="turn-note" id="turnNote" aria-live="polite"></div>
+  </section>
+  <div class="wheel-wrap"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="900" height="900" aria-label="កង់សំណាងមានសកម្មភាពដប់យ៉ាង"></canvas><div class="center-cap" aria-hidden="true">🎡</div></div>
+  <button id="spin" type="button">🎯 បង្វិលកង់សំណាង</button>
+  <section class="result" id="result" aria-live="polite" aria-atomic="true">
+    <small>លទ្ធផល និងការណែនាំ</small>
+    <div id="resultTitle">ត្រៀមខ្លួនហើយឬនៅ? 😄</div>
+    <div id="resultDesc">ចុចប៊ូតុងខាងលើ ដើម្បីចាប់ផ្តើមលេង</div>
+    <div class="action-area" id="actionArea"></div>
+  </section>
+  <div class="grid" id="legend" aria-label="ច្បាប់ក្នុងកង់សំណាង"></div>
 </main>
-<p class="footer">💧 ជម្រើសគ្មានស្រា និងការរួចខ្លួនតែងតែអាចជ្រើសបាន។ មិនបង្ខំអ្នកណាឱ្យផឹក ឬធ្វើអ្វីដែលមិនស្រួលចិត្តទេ។ សូមលេងដោយសុវត្ថិភាព!</p>
+<p class="footer">💧 អាចជ្រើសភេសជ្ជៈគ្មានស្រា ឬរំលងពេលណាក៏បាន។ កុំបង្ខំអ្នកណាឱ្យផឹក ឬធ្វើអ្វីដែលមិនស្រួលចិត្ត។ សូមលេងដោយសុវត្ថិភាព!</p>
 </div>
 <script>
 const options = [
- {emoji:"💧",title:"ផឹកទឹកមួយកែវ",desc:"ជម្រើសគ្មានស្រា"},
- {emoji:"😂",title:"និយាយរឿងកំប្លែង",desc:"ធ្វើឱ្យមិត្តភក្តិសើច"},
- {emoji:"🎤",title:"ច្រៀងមួយបទ",desc:"បង្ហាញសមត្ថភាព"},
- {emoji:"🃏",title:"Truth or Dare",desc:"សំណួរ ឬបញ្ហាប្រឈមសមរម្យ"},
- {emoji:"🛡️",title:"រួចខ្លួនមួយជុំ",desc:"មិនចាំបាច់ផឹក"},
- {emoji:"👥",title:"ជ្រើសមិត្តម្នាក់",desc:"ឱ្យគេជ្រើសបញ្ហាប្រឈម"},
- {emoji:"💃",title:"រាំ 5 វិនាទី",desc:"បង្កើតបរិយាកាសសប្បាយ"},
- {emoji:"🎁",title:"បង្វិលម្ដងទៀត",desc:"សាកល្បងសំណាងម្ដងទៀត"}
+  {id:"unfaithful",emoji:"🥃",title:"អត់ស្មោះ",short:"អត់ស្មោះ",desc:"ពិន័យ៖ ផឹក ២ កែវ។ អាចជ្រើសភេសជ្ជៈគ្មានស្រា ឬរំលងបាន។"},
+  {id:"faithful",emoji:"🛡️",title:"ស្មោះ",short:"ស្មោះ",desc:"រួចខ្លួនមួយវេន — មិនចាំបាច់ផឹកទេ។"},
+  {id:"command",emoji:"👉",title:"បញ្ជាមិត្តម្នាក់",short:"បញ្ជាមិត្ត",desc:"ជ្រើសមិត្តម្នាក់ឱ្យផឹក ១ កែវ។ គេអាចប្ដូរជាភេសជ្ជៈគ្មានស្រា ឬរំលងបាន។"},
+  {id:"luck",emoji:"🍀",title:"សំណាង ៤ ដង",short:"សំណាង ×៤",desc:"ទទួលបានសន្លឹកសំណាង ៤ ដង។ ប្រើម្តងក្នុងមួយវេនផឹក ដើម្បីមិនបង់ថ្លៃភេសជ្ជៈ។"},
+  {id:"water",emoji:"💧",title:"ផឹកទឹកមួយកែវ",short:"ផឹកទឹក",desc:"ជម្រើសស្រស់ស្រាយ គ្មានស្រា។"},
+  {id:"sing",emoji:"🎤",title:"ច្រៀងមួយបទ",short:"ច្រៀង",desc:"ជ្រើសបទដែលអ្នកចូលចិត្ត ហើយច្រៀងមួយឃ្លា។"},
+  {id:"truth",emoji:"🃏",title:"ពិត ឬ ហ៊ាន",short:"ពិត/ហ៊ាន",desc:"ឆ្លើយសំណួរ ឬធ្វើកិច្ចការសមរម្យមួយ។ អាចបដិសេធបញ្ហាណាដែលមិនស្រួលចិត្ត។"},
+  {id:"friend",emoji:"👥",title:"មិត្តជ្រើសបញ្ហាប្រឈម",short:"មិត្តជ្រើស",desc:"ឱ្យមិត្តម្នាក់ជ្រើសកិច្ចការសប្បាយ និងសមរម្យមួយ។"},
+  {id:"dance",emoji:"💃",title:"រាំ ៥ វិនាទី",short:"រាំ ៥ វិ.",desc:"រាំតាមចង្វាក់ដែលអ្នកចូលចិត្ត រយៈពេល ៥ វិនាទី។"},
+  {id:"again",emoji:"🎁",title:"បង្វិលម្ដងទៀត",short:"ម្ដងទៀត",desc:"វេននេះអ្នកអាចបង្វិលកង់ម្ដងទៀតបាន។"}
 ];
-const colors=["#1b72a8","#f2c45f","#e86f51","#68a88c","#7664b5","#f09b50","#3f8fbd","#d9ad35"];
-const canvas=document.getElementById("wheel"),ctx=canvas.getContext("2d"),N=options.length,arc=Math.PI*2/N;
-let rotation=0,spinning=false;
+const colors=["#176bb2","#e6ad2e","#de6653","#188b75","#765db2","#e28a3b","#368daf","#cf9b28","#cb5d78","#536d9b"];
+const wheel=document.getElementById("wheel"),ctx=wheel.getContext("2d"),N=options.length,arc=Math.PI*2/N;
+const spinButton=document.getElementById("spin"),result=document.getElementById("result"),resultTitle=document.getElementById("resultTitle"),resultDesc=document.getElementById("resultDesc"),actionArea=document.getElementById("actionArea");
+const playerList=document.getElementById("playerList"),turnNote=document.getElementById("turnNote");
+let rotation=0,spinning=false,actionPending=false,currentPlayerIndex=0,activePlayerName="អ្នកលេង",soundEnabled=true,audioContext=null,lastTick=-1;
+let players=loadPlayers();
+
+function loadPlayers(){
+  try{const saved=JSON.parse(localStorage.getItem("spinDrinkPlayers")||"[]");return Array.isArray(saved)?saved.filter(p=>p&&typeof p.name==="string").map(p=>({name:p.name,freePasses:Math.max(0,Number(p.freePasses)||0)})):[];}catch(_){return [];}
+}
+function savePlayers(){try{localStorage.setItem("spinDrinkPlayers",JSON.stringify(players));}catch(_) {}}
+function currentPlayer(){return players.length?players[currentPlayerIndex%players.length].name:"អ្នកលេង";}
+function currentPlayerRecord(){return players.length?players[currentPlayerIndex%players.length]:null;}
 function draw(){
- const c=canvas.width/2,r=canvas.width*.47;
- ctx.clearRect(0,0,canvas.width,canvas.height);
- options.forEach((o,i)=>{
-   const start=rotation+i*arc-Math.PI/2;
-   ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,start,start+arc);ctx.closePath();
-   ctx.fillStyle=colors[i];ctx.fill();ctx.strokeStyle="#fff8e7";ctx.lineWidth=7;ctx.stroke();
-   ctx.save();ctx.translate(c,c);ctx.rotate(start+arc/2);
-   ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillStyle="#fff";
-   ctx.font="bold 29px system-ui, sans-serif";
-   ctx.shadowColor="#0004";ctx.shadowBlur=3;
-   ctx.fillText(o.emoji,r-27,0);
-   ctx.font="bold 21px 'Noto Sans Khmer',system-ui,sans-serif";
-   const short=["ផឹកទឹក","កំប្លែង","ច្រៀង","Truth/Dare","រួចខ្លួន","ជ្រើសមិត្ត","រាំ 5 វិ.","ម្ដងទៀត"][i];
-   ctx.fillText(short,r-75,0);
-   ctx.restore();
- });
- ctx.beginPath();ctx.arc(c,c,r,0,Math.PI*2);ctx.strokeStyle="#f8e7b5";ctx.lineWidth=12;ctx.stroke();
+  const c=wheel.width/2,r=wheel.width*.47;
+  ctx.clearRect(0,0,wheel.width,wheel.height);
+  options.forEach((o,i)=>{
+    const start=rotation+i*arc-Math.PI/2;
+    ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,start,start+arc);ctx.closePath();
+    ctx.fillStyle=colors[i];ctx.fill();ctx.strokeStyle="#fff8e7";ctx.lineWidth=7;ctx.stroke();
+    ctx.save();ctx.translate(c,c);ctx.rotate(start+arc/2);ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.shadowColor="#0008";ctx.shadowBlur=4;ctx.fillStyle="#fff";
+    ctx.font="bold 31px system-ui, sans-serif";ctx.fillText(o.emoji,r-25,0);
+    ctx.font="bold 26px 'Noto Sans Khmer','Khmer OS System',system-ui,sans-serif";
+    ctx.lineWidth=4;ctx.strokeStyle="#10264a88";ctx.strokeText(o.short,r-72,0);ctx.fillText(o.short,r-72,0);
+    ctx.restore();
+  });
+  ctx.beginPath();ctx.arc(c,c,r,0,Math.PI*2);ctx.strokeStyle="#f8e7b5";ctx.lineWidth=12;ctx.stroke();
 }
-function showOption(i){
- const o=options[i];
- document.getElementById("resultTitle").textContent=o.emoji+" "+o.title;
- document.getElementById("resultDesc").textContent=o.desc;
+function renderPlayers(){
+  playerList.replaceChildren();
+  players.forEach((player,index)=>{
+    const chip=document.createElement("div");chip.className="player-chip"+(index===currentPlayerIndex?" current":"");
+    const name=document.createElement("strong");name.textContent=player.name;chip.appendChild(name);
+    const passes=document.createElement("small");passes.textContent="🍀 "+player.freePasses+" ដង";chip.appendChild(passes);
+    if(index===currentPlayerIndex){const turn=document.createElement("small");turn.textContent="• វេន";chip.appendChild(turn);}
+    const remove=document.createElement("button");remove.type="button";remove.className="remove-player";remove.textContent="×";remove.setAttribute("aria-label","ដក "+player.name+" ចេញ");remove.addEventListener("click",()=>removePlayer(index));chip.appendChild(remove);
+    playerList.appendChild(chip);
+  });
+  turnNote.textContent=players.length?"វេនបច្ចុប្បន្ន៖ "+currentPlayer()+" • សន្លឹកសំណាងសល់ "+currentPlayerRecord().freePasses+" ដង":"បន្ថែមឈ្មោះអ្នកលេង ដើម្បីចាប់ផ្តើមប្ដូរវេនគ្នា។";
+  savePlayers();
 }
+function addPlayer(name){
+  const clean=name.trim();if(!clean)return false;
+  const duplicate=players.find(p=>p.name.toLocaleLowerCase()===clean.toLocaleLowerCase());
+  if(duplicate)return duplicate;
+  players.push({name:clean,freePasses:0});renderPlayers();return players[players.length-1];
+}
+function removePlayer(index){
+  if(spinning||actionPending)return;
+  players.splice(index,1);
+  if(!players.length)currentPlayerIndex=0;else if(index<currentPlayerIndex)currentPlayerIndex--;else if(currentPlayerIndex>=players.length)currentPlayerIndex=0;
+  renderPlayers();
+}
+function advanceTurn(){actionPending=false;if(players.length)currentPlayerIndex=(currentPlayerIndex+1)%players.length;spinButton.disabled=false;spinButton.textContent="🎯 បង្វិលម្ដងទៀត";renderPlayers();}
+function updateResult(title,description){resultTitle.textContent=title;resultDesc.textContent=description;}
+function addHint(text){const p=document.createElement("p");p.className="action-hint";p.textContent=text;actionArea.appendChild(p);}
+function consumeLuckyPass(player){
+  if(!player||player.freePasses<1)return "";
+  player.freePasses-=1;renderPlayers();
+  return "🍀 បានប្រើសន្លឹកសំណាង ១ ដង៖ វេននេះមិនបង់ថ្លៃភេសជ្ជៈទេ។ នៅសល់ "+player.freePasses+" ដង។";
+}
+function makeNextButton(){
+  const button=document.createElement("button");button.type="button";button.className="secondary-button";button.textContent="បន្តទៅវេនបន្ទាប់";button.addEventListener("click",advanceTurn);actionArea.appendChild(button);
+}
+function resolveCommand(targetName){
+  const clean=targetName.trim();if(!clean){addHint("សូមបញ្ចូលឈ្មោះមិត្តភក្តិម្នាក់។");return false;}
+  if(clean.toLocaleLowerCase()===activePlayerName.toLocaleLowerCase()){addHint("សូមជ្រើសមិត្តភក្តិផ្សេង ព្រោះមិនអាចបញ្ជាខ្លួនឯងបានទេ។");return false;}
+  const target=addPlayer(clean);
+  const freeMessage=consumeLuckyPass(target);
+  updateResult("👉 "+target.name+" ត្រូវបានបញ្ជាឱ្យផឹក ១ កែវ",freeMessage||"បើគេចង់ផឹក អាចប្ដូរជាភេសជ្ជៈគ្មានស្រា ឬរំលងបាន។");
+  actionArea.replaceChildren();addHint("ការបញ្ជានេះគ្រាន់តែជាការលេងប៉ុណ្ណោះ — គ្រប់គ្នាអាចបដិសេធដោយសេរី។");
+  advanceTurn();playWinSound();return true;
+}
+function showCommandForm(){
+  actionPending=true;spinButton.disabled=true;spinButton.textContent="បញ្ចប់សកម្មភាពមុន";
+  const form=document.createElement("form");form.className="command-form";
+  const label=document.createElement("label");label.htmlFor="commandTarget";label.textContent="ឈ្មោះមិត្តដែលអ្នកចង់បញ្ជា";
+  const input=document.createElement("input");input.id="commandTarget";input.name="target";input.type="text";input.maxLength=24;input.required=true;input.autocomplete="off";input.placeholder="បញ្ចូល ឬជ្រើសឈ្មោះមិត្ត";
+  const list=document.createElement("datalist");list.id="otherPlayers";
+  players.filter(p=>p.name.toLocaleLowerCase()!==activePlayerName.toLocaleLowerCase()).forEach(p=>{const option=document.createElement("option");option.value=p.name;list.appendChild(option);});input.setAttribute("list",list.id);
+  const button=document.createElement("button");button.type="submit";button.textContent="បញ្ជាឱ្យផឹក";
+  form.append(label,input,list,button);form.addEventListener("submit",event=>{event.preventDefault();resolveCommand(input.value);});actionArea.appendChild(form);
+  const pass=document.createElement("button");pass.type="button";pass.className="secondary-button";pass.textContent="រំលងដោយសុវត្ថិភាព";pass.style.marginTop="8px";pass.addEventListener("click",()=>{updateResult("🛡️ អ្នកបានរួចខ្លួន","មិនបាច់បញ្ជាឱ្យនរណាម្នាក់ផឹកទេ។");actionArea.replaceChildren();advanceTurn();});actionArea.appendChild(pass);
+}
+function showOption(index){
+  const option=options[index];actionArea.replaceChildren();
+  updateResult(option.emoji+" "+option.title,option.desc);
+  if(option.id==="unfaithful"){
+    const player=currentPlayerRecord(),freeMessage=consumeLuckyPass(player);
+    const text=(freeMessage?freeMessage+" ":"")+"អាចជ្រើសភេសជ្ជៈគ្មានស្រា ឬរំលងបាន។ គ្មានការបង្ខំទេ។";
+    updateResult(option.emoji+" អត់ស្មោះ — "+activePlayerName,text);
+    addHint("ពិន័យ៖ ផឹក ២ កែវ។ សន្លឹកសំណាងគ្របដណ្ដប់ថ្លៃភេសជ្ជៈក្នុងវេននេះ។");advanceTurn();return;
+  }
+  if(option.id==="faithful"){
+    updateResult("🛡️ "+activePlayerName+" ស្មោះ — រួចខ្លួន!","វេននេះមិនចាំបាច់ផឹកទេ។");advanceTurn();return;
+  }
+  if(option.id==="luck"){
+    const player=currentPlayerRecord();if(player){player.freePasses+=4;renderPlayers();}
+    updateResult("🍀 "+activePlayerName+" សំណាង ៤ ដង!","អ្នកទទួលបានសន្លឹកសំណាង ៤ ដង។ ពេលមានវេនផឹក សន្លឹកមួយអាចជួយមិនបង់ថ្លៃភេសជ្ជៈក្នុងវេននោះ។");advanceTurn();return;
+  }
+  if(option.id==="command"){
+    updateResult("👉 "+activePlayerName+" បញ្ជាមិត្តម្នាក់","ជ្រើសឈ្មោះមិត្តម្នាក់ឱ្យផឹក ១ កែវ។ អាចជ្រើសភេសជ្ជៈគ្មានស្រា ឬរំលងបាន។");showCommandForm();return;
+  }
+  if(option.id==="again"){
+    addHint("វេនរបស់ "+activePlayerName+" នៅបន្ត។");return;
+  }
+  if(option.id==="water")addHint("ល្អណាស់! ការផឹកទឹកជួយរក្សាជាតិទឹកក្នុងខ្លួន។");
+  if(option.id==="friend")addHint("ជ្រើសមិត្តម្នាក់ ហើយសុំឱ្យគេជ្រើសកិច្ចការដែលគ្រប់គ្នាស្រួលចិត្ត។");
+  advanceTurn();
+}
+function getAudio(){if(!soundEnabled)return null;try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;if(!audioContext)audioContext=new Ctx();if(audioContext.state==="suspended")audioContext.resume();return audioContext;}catch(_){return null;}}
+function tone(frequency,duration,gainValue,type){const audio=getAudio();if(!audio)return;const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.type=type||"sine";oscillator.frequency.setValueAtTime(frequency,audio.currentTime);gain.gain.setValueAtTime(gainValue,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);oscillator.connect(gain);gain.connect(audio.destination);oscillator.start();oscillator.stop(audio.currentTime+duration);}
+function playTick(){tone(620+Math.random()*90,.035,.025,"triangle");}
+function playWinSound(){if(!soundEnabled)return;const audio=getAudio();if(!audio)return;[523.25,659.25,783.99,1046.5].forEach((frequency,index)=>setTimeout(()=>tone(frequency,.42,.085,"sine"),index*85));}
 function spin(){
- if(spinning)return;
- spinning=true;const btn=document.getElementById("spin");btn.disabled=true;btn.textContent="✨ កំពុងបង្វិល...";
- const start=rotation;
- const winner=Math.floor(Math.random()*N);
- // Pointer is at top; each segment is centered on its midpoint.
- const target=((Math.PI*2) - (winner*arc+arc/2))%(Math.PI*2);
- const current=((start%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
- const extra=6*Math.PI*2 + ((target-current+Math.PI*2)%(Math.PI*2));
- const duration=3600,begin=performance.now();
- function frame(now){
-   const t=Math.min(1,(now-begin)/duration),ease=1-Math.pow(1-t,4);
-   rotation=start+extra*ease;draw();
-   if(t<1)requestAnimationFrame(frame);
-   else{
-     rotation=((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);draw();
-     showOption(winner);spinning=false;btn.disabled=false;btn.textContent="🎯 បង្វិលម្ដងទៀត";
-     if(winner===7){setTimeout(()=>{document.getElementById("resultDesc").textContent="អ្នកអាចបង្វិលកង់ម្ដងទៀតបាន!";},150);}
-   }
- }
- requestAnimationFrame(frame);
+  if(spinning||actionPending)return;if(!players.length)addPlayer("អ្នកលេង ១");getAudio();spinning=true;activePlayerName=currentPlayer();lastTick=-1;spinButton.disabled=true;spinButton.textContent="✨ កំពុងបង្វិល...";document.getElementById("playerName").disabled=true;document.querySelector(".player-form button").disabled=true;
+  const start=rotation,winner=Math.floor(Math.random()*N),target=((Math.PI*2)-(winner*arc+arc/2))%(Math.PI*2),current=((start%(Math.PI*2))+Math.PI*2)%(Math.PI*2),extra=6*Math.PI*2+((target-current+Math.PI*2)%(Math.PI*2)),duration=3900,begin=performance.now();
+  function frame(now){
+    const t=Math.min(1,(now-begin)/duration),ease=1-Math.pow(1-t,4);rotation=start+extra*ease;draw();
+    const pointerAngle=(Math.PI*2-(((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2)))%(Math.PI*2),segment=Math.floor(pointerAngle/arc);
+    if(segment!==lastTick){lastTick=segment;playTick();}
+    if(t<1)requestAnimationFrame(frame);else{
+      rotation=((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);draw();spinning=false;document.getElementById("playerName").disabled=false;document.querySelector(".player-form button").disabled=false;spinButton.disabled=false;spinButton.textContent="🎯 បង្វិលម្ដងទៀត";
+      showOption(winner);result.classList.remove("pop");void result.offsetWidth;result.classList.add("pop");playWinSound();
+    }
+  }
+  requestAnimationFrame(frame);
 }
-document.getElementById("spin").addEventListener("click",spin);
+document.getElementById("playerForm").addEventListener("submit",event=>{
+  event.preventDefault();if(spinning)return;const input=document.getElementById("playerName");if(!input.value.trim())return;
+  const before=players.length,player=addPlayer(input.value);if(players.length===before&&player){turnNote.textContent="ឈ្មោះនេះមានក្នុងបញ្ជីរួចហើយ។";}
+  input.value="";input.focus();
+});
+document.getElementById("soundToggle").addEventListener("click",event=>{
+  soundEnabled=!soundEnabled;const button=event.currentTarget;button.textContent=soundEnabled?"🔊":"🔇";button.setAttribute("aria-label",soundEnabled?"បិទសំឡេង":"បើកសំឡេង");button.title=soundEnabled?"បិទសំឡេង":"បើកសំឡេង";
+  try{localStorage.setItem("spinDrinkSound",String(soundEnabled));}catch(_){}if(soundEnabled)playWinSound();
+});
+try{soundEnabled=localStorage.getItem("spinDrinkSound")!=="false";}catch(_){}
+const soundButton=document.getElementById("soundToggle");soundButton.textContent=soundEnabled?"🔊":"🔇";soundButton.setAttribute("aria-label",soundEnabled?"បិទសំឡេង":"បើកសំឡេង");soundButton.title=soundEnabled?"បិទសំឡេង":"បើកសំឡេង";
+spinButton.addEventListener("click",spin);
 const legend=document.getElementById("legend");
-options.forEach(o=>{const div=document.createElement("div");div.className="item";const strong=document.createElement("strong");strong.textContent=o.emoji+" "+o.title;const span=document.createElement("span");span.textContent=o.desc;div.append(strong,span);legend.appendChild(div)});
-draw();
+options.forEach(option=>{const card=document.createElement("div");card.className="item";const title=document.createElement("strong");title.textContent=option.emoji+" "+option.title;const description=document.createElement("span");description.textContent=option.desc;card.append(title,description);legend.appendChild(card);});
+renderPlayers();draw();
 </script>
-</body></html>
+</body>
+</html>
