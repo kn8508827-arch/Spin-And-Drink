@@ -4,12 +4,15 @@ A Khmer, mobile-first party wheel served by a small Node.js application.
 
 ## Game features
 
-- A bundled Team ស្មោះស្នេហ៍ logo and a new blue-and-gold night-sky theme.
-- A smooth 8.2-second wheel spin, with reduced-motion support.
-- The original drink-safe, friendship, challenge, repeat-spin, and lucky-pass outcomes.
+- A bundled Team ស្មោះស្នេហ៍ logo and a responsive animated galaxy theme.
+- Adjustable spin speed, 3–15 second duration, and four animation styles, with reduced-motion support.
 - Free play for every registered player. Add names and spin in turn without payment or an admin account.
+- Editable wheel labels, emojis, colors, order, and custom items in Settings. Wheel edits and preferences are saved in this browser.
+- Optional generated spin, tick, and win sounds, background music, particle, and wheel-glow controls.
+- A new **រាំ 2 នាទី** outcome. It does not start a timer automatically.
+- The default wheel no longer includes the three items marked in the supplied screenshot: water, truth-or-dare, and friend-picks.
 - The **សំណាងបានលុយ 💰** outcome appears only when a prize pool has been funded.
-- The server chooses and records outcomes. The browser cannot submit a preferred result or change the pool amount.
+- The server randomly chooses and records an outcome from the wheel item IDs sent by the browser; the browser cannot request a preferred result or change the prize pool.
 - Optional host-only payment and prize-settlement API endpoints remain available for deployments that choose to fund a prize pool.
 
 ## Start locally
@@ -20,7 +23,7 @@ Use Node.js 18 or newer, then start the server:
 npm start
 ```
 
-Open `http://localhost:3000`, add player names, and spin. Free play does not require `ADMIN_KEY` or payment setup. If you enable the optional host-only payment API, set `ADMIN_KEY` to a private value of at least 32 characters; do not put it in browser code or commit it.
+Open `http://localhost:3000`, add player names, and spin. Open **ការកំណត់** to edit wheel items, change spin behavior, and manage audio or galaxy effects. Settings are stored in that browser's local storage. Free play does not require `ADMIN_KEY` or payment setup. If you enable the optional host-only payment API, set `ADMIN_KEY` to a private value of at least 32 characters; do not put it in browser code or commit it.
 
 Run the server checks with `npm test`.
 
