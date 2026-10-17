@@ -23,12 +23,12 @@
           <button class="btn-add" type="submit">បន្ថែម</button>
         </form>
         <div class="player-list" id="playerList" aria-live="polite"></div>
-        <p class="payment-note" id="paymentNote" role="status">អ្នកលេងម្នាក់បង់ 500៛។ ម្ចាស់ហ្គេមត្រូវបញ្ជាក់ការទូទាត់មុនពេលបង្វិល។</p>
+        <p class="game-note" role="status">លេងឥតគិតថ្លៃសម្រាប់អ្នកទាំងអស់គ្នា។ បន្ថែមឈ្មោះ ហើយបង្វិលកង់បានភ្លាមៗ។</p>
       </section>
 
       <section class="pool-summary" aria-label="សង្ខេបប្រាក់រង្វាន់">
         <div class="pool-stat"><span>ប្រាក់រង្វាន់</span><strong id="poolAmount">0៛</strong></div>
-        <div class="pool-stat"><span>អ្នកដែលបានបង់</span><strong id="paidCount">0</strong></div>
+        <div class="pool-stat"><span>ចំនួនអ្នកលេង</span><strong id="playerCount">0</strong></div>
       </section>
 
       <div class="top-visual">
@@ -142,21 +142,21 @@ function renderPlayers(){
   for(const player of state.players){
     const chip=document.createElement('span');chip.className='player-chip'+(player.id===state.turnPlayerId?' current':'');
     const name=document.createElement('strong');name.textContent=player.name;
-    const payment=document.createElement('small');payment.textContent=player.paid?'បានបង់':'រង់ចាំការបញ្ជាក់';
-    chip.append(name,payment);playerList.append(chip);
+    const turn=document.createElement('small');turn.textContent=player.id===state.turnPlayerId?'វេនបច្ចុប្បន្ន':'លេងឥតគិតថ្លៃ';
+    chip.append(name,turn);playerList.append(chip);
   }
 }
 function renderMoney(){
   if(!state)return;
   document.getElementById('poolAmount').textContent=Number(state.poolRiel||0).toLocaleString('en-US')+'៛';
-  document.getElementById('paidCount').textContent=String(Number(state.paidCount)||0);
-  const paymentNote=document.getElementById('paymentNote');
-  paymentNote.textContent=state.adminEnabled
-    ?'អ្នកលេងម្នាក់បង់ 500៛។ ម្ចាស់ហ្គេមត្រូវបញ្ជាក់ការទូទាត់មុនពេលបង្វិល។'
-    :'ការបញ្ជាក់ការទូទាត់មិនទាន់រៀបចំទេ។ សូមទាក់ទងម្ចាស់ហ្គេម។';
+  document.getElementById('playerCount').textContent=String(state.players.length);
+  
+  
+    
+    
 }
-function renderControls(){if(!state)return;spinButton.disabled=spinning||actionPending||!state.turnPlayerId||state.paidCount===0||state.pendingAdvance;luckyMoneyBtn.disabled=spinButton.disabled;}
-function renderAll(){if(!state)return;renderPlayers();renderMoney();renderControls();}
+function renderControls(){if(!state)return;const busy=spinning||actionPending||!state.turnPlayerId||state.pendingAdvance;spinButton.disabled=busy;luckyMoneyBtn.disabled=busy||Number(state.poolRiel||0)===0;}
+function renderAll(){if(!state)return;renderPlayers();renderMoney();renderControls();if(!spinning)drawWheel(options.filter(option=>option.id!=='money'||Number(state.poolRiel||0)>0));}
 
 function playTick(){try{const audioCtx=window.AudioContext||window.webkitAudioContext;if(!audioCtx)return;const a=new audioCtx();const o=a.createOscillator();const g=a.createGain();o.type='triangle';o.frequency.value=520;g.gain.value=0.02;o.connect(g);g.connect(a.destination);o.start();setTimeout(()=>{o.stop();a.close();},30);}catch(_){}}
 
