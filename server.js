@@ -6,9 +6,10 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 const ENTRY_FEE_RIEL = 500;
+const REMOVED_OUTCOME_IDS = Object.freeze(["water", "truth", "friend"]);
 const OUTCOME_IDS = [
-  "unfaithful", "faithful", "command", "luck", "water", "sing",
-  "truth", "friend", "dance", "again", "money"
+  "unfaithful", "faithful", "command", "luck", "sing",
+  "dance", "dance-two-minutes", "again", "money"
 ];
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -411,10 +412,31 @@ function createApp(config = {}) {
         sendError(res, 409, "The turn has changed. Refresh the game before spinning.");
         return;
       }
-      const availableOutcomeIds = OUTCOME_IDS.filter(id => id !== "money" || (paidPlayers.length > 0 && !state.payout));
+      let configuredOutcomeIds = OUTCOME_IDS;
+      if (Object.prototype.hasOwnProperty.call(body, "wheelOptionIds")) {
+        if (!Array.isArray(body.wheelOptionIds) || body.wheelOptionIds.length < 1 || body.wheelOptionIds.length > 24) {
+          sendError(res, 400, "Choose between 1 and 24 wheel items before spinning.");
+          return;
+        }
+        const seen = new Set();
+        configuredOutcomeIds = [];
+        for (const id of body.wheelOptionIds) {
+          if (typeof id !== "string" || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(id) || seen.has(id)) {
+            sendError(res, 400, "Wheel item identifiers must be unique and valid.");
+            return;
+          }
+          seen.add(id);
+          if (!REMOVED_OUTCOME_IDS.includes(id)) configuredOutcomeIds.push(id);
+        }
+      }
+      const availableOutcomeIds = configuredOutcomeIds.filter(id => id !== "money" || (paidPlayers.length > 0 && !state.payout));
+      if (!availableOutcomeIds.length) {
+        sendError(res, 400, "Add at least one playable wheel item before spinning.");
+        return;
+      }
       const selectedIndex = selectIndex(availableOutcomeIds.length);
       const outcomeId = availableOutcomeIds[selectedIndex];
-      if (!outcomeId || !OUTCOME_IDS.includes(outcomeId)) {
+      if (!outcomeId || !availableOutcomeIds.includes(outcomeId)) {
         throw new Error("The outcome selector returned an invalid result.");
       }
       const spin = {
@@ -530,4 +552,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createApp, ENTRY_FEE_RIEL, OUTCOME_IDS };
+module.exports = { createApp, ENTRY_FEE_RIEL, OUTCOME_IDS, REMOVED_OUTCOME_IDS };

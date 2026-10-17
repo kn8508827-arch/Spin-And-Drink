@@ -3,11 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Spin and Drink · Team ស្មោះស្នេហ៍</title>
+  <meta name="theme-color" content="#08152d">
+  <title>Galaxy Spin &amp; Drink · Team ស្មោះស្នេហ៍</title>
   <link rel="icon" href="/Team_Smaoh_Sneha_Logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/premium-ui.css">
 </head>
 <body>
+  <div class="cosmic-backdrop" aria-hidden="true">
+    <canvas id="starfield"></canvas>
+    <div class="nebula nebula-one"></div>
+    <div class="nebula nebula-two"></div>
+    <div class="spiral-galaxy galaxy-one"></div>
+    <div class="spiral-galaxy galaxy-two"></div>
+    <div class="cosmic-dust"></div>
+  </div>
+
   <div class="wrap">
     <header class="header">
       <div class="logo"><img src="/Team_Smaoh_Sneha_Logo.svg" alt="Team ស្មោះស្នេហ៍"></div>
@@ -15,7 +25,7 @@
     </header>
 
     <main class="panel">
-      <section class="players-panel" aria-labelledby="playersTitle">
+      <section class="players-panel" aria-labelledby="playersTitle" id="playersSection">
         <h2 class="section-heading" id="playersTitle">👥 អ្នកលេង</h2>
         <form class="player-form" id="playerForm">
           <label class="sr-only" for="playerName">ឈ្មោះអ្នកលេង</label>
@@ -31,16 +41,11 @@
         <div class="pool-stat"><span>ចំនួនអ្នកលេង</span><strong id="playerCount">0</strong></div>
       </section>
 
-      <div class="top-visual">
-        <img class="bg" src="/assets/bg-gradient.svg" alt="background">
-        <div class="overlay"></div>
-      </div>
-
       <div class="wheel-wrap" aria-live="polite">
         <div class="pointer" aria-hidden="true"></div>
-        <div style="position:relative">
-          <canvas id="wheel" width="900" height="900" aria-label="កង់សំណាង"></canvas>
-          <div class="center-cap" aria-hidden="true"><img src="/Team_Smaoh_Sneha_Logo.svg" alt="logo" style="width:84px;height:84px;border-radius:50%"></div>
+        <div class="wheel-stage" id="wheelStage">
+          <canvas id="wheel" width="900" height="900" role="img" aria-label="កង់សំណាង"></canvas>
+          <div class="center-cap" aria-hidden="true"><img src="/Team_Smaoh_Sneha_Logo.svg" alt="" width="84" height="84"></div>
         </div>
 
         <div class="buttons">
@@ -50,10 +55,9 @@
 
         <div class="grid-controls">
           <div class="control-card">💧 ភេសជ្ជៈ</div>
-          <div class="control-card">👥 អ្នកលេង</div>
-          <div class="control-card">⚙️ ការកំណត់</div>
+          <button class="control-card" id="playersShortcut" type="button">👥 អ្នកលេង</button>
+          <button class="control-card" id="openSettings" type="button" aria-haspopup="dialog">⚙️ ការកំណត់</button>
         </div>
-
       </div>
 
       <section class="result" id="result" aria-live="polite">
@@ -62,143 +66,79 @@
         <div id="resultDesc">បន្ថែមអ្នកលេង និងចាប់ផ្ដើមជាមួយបង្វិលកង់!</div>
         <div class="action-area" id="actionArea"></div>
       </section>
-
     </main>
     <p class="footer">💧 លេងដោយមានទំលាប់ និងកុំបង្ខំអ្នកណាឲ្យផឹក</p>
   </div>
 
-  <div class="result-card" id="resultCard" role="dialog" aria-hidden="true">
-    <div id="cardTitle" style="font-size:20px;font-weight:900;color:#1b2b40"></div>
-    <div id="cardDesc" style="margin-top:8px;color:#233a55"></div>
-    <div style="margin-top:12px;text-align:right"><button id="closeResult" class="btn-3d" style="background:#ddd;padding:8px 12px;border-radius:10px">Close</button></div>
+  <div class="dialog-backdrop" id="resultBackdrop" hidden>
+    <section class="result-card" id="resultCard" role="dialog" aria-modal="true" aria-labelledby="cardTitle">
+      <div class="result-sparkle" aria-hidden="true">✨</div>
+      <h2 id="cardTitle"></h2>
+      <div id="cardDesc"></div>
+      <div class="dialog-actions"><button id="closeResult" class="btn-3d btn-secondary" type="button">បិទ</button></div>
+    </section>
   </div>
 
-<script>
-"use strict";
-// Minimal gameplay-preserving JS with improved spin animation and UI
-const options = [
-  {id:"unfaithful",emoji:"🥃",title:"អត់ស្មោះ",short:"អត់ស្មោះ",desc:"ពិន័យ៖ ផឹក ២ កែវ។"},
-  {id:"faithful",emoji:"🛡️",title:"ស្មោះ",short:"ស្មោះ",desc:"រួចខ្លួនមួយវេន — មិនចាំបាច់ផឹកទេ។"},
-  {id:"command",emoji:"👉",title:"បញ្ជាមិត្តម្នាក់",short:"បញ្ជាមិត្ត",desc:"ជ្រើសមិត្តម្នាក់ឱ្យផឹក។"},
-  {id:"luck",emoji:"🍀",title:"សំណាង ៤ ដង",short:"សំណាង ×៤",desc:"ទទួលបានសន្លឹកសំណាង ៤ ដង។"},
-  {id:"water",emoji:"💧",title:"ផឹកទឹកមួយកែវ",short:"ផឹកទឹក",desc:"ជម្រើសស្រស់ស្រាយ។"},
-  {id:"sing",emoji:"🎤",title:"ច្រៀងមួយបទ",short:"ច្រៀង",desc:"ច្រៀងមួយបទ។"},
-  {id:"truth",emoji:"🃏",title:"ពិត ឬ ហ៊ាន",short:"ពិត/ហ៊ាន",desc:"ឆ្លើយសំណួរ ឬធ្វើកិច្ចការ។"},
-  {id:"friend",emoji:"👥",title:"មិត្តជ្រើសបញ្ហាប្រឈម",short:"មិត្តជ្រើស",desc:"ជ្រើសមិត្តម្នាក់។"},
-  {id:"dance",emoji:"💃",title:"រាំ ៥ វិនាទី",short:"រាំ ៥ វិ.",desc:"រាំ ៥ វិនាទី។"},
-  {id:"again",emoji:"🎁",title:"បង្វិលម្ដងទៀត",short:"ម្ដងទៀត",desc:"អ្នកអាចបង្វិលកង់ម្ដងទៀត។"},
-  {id:"money",emoji:"💰",title:"សំណាងបានលុយ",short:"បានលុយ",desc:"ឈ្នះប្រាក់រង្វាន់។"},
-];
-const colors=["#176bb2","#e6ad2e","#de6653","#188b75","#765db2","#e28a3b","#368daf","#cf9b28","#cb5d78","#536d9b","#d89c16"];
-const wheel=document.getElementById('wheel'),ctx=wheel.getContext('2d');
-const spinButton=document.getElementById('spin'),luckyMoneyBtn=document.getElementById('luckyMoney');
-const resultTitle=document.getElementById('resultTitle'),resultDesc=document.getElementById('resultDesc'),actionArea=document.getElementById('actionArea');
-const resultCard=document.getElementById('resultCard'),cardTitle=document.getElementById('cardTitle'),cardDesc=document.getElementById('cardDesc'),closeResult=document.getElementById('closeResult');
-let state=null,rotation=0,spinning=false,actionPending=false,lastTick=-1,wheelOptions=options;let freePassesById={};
-try{freePassesById=JSON.parse(localStorage.getItem('spinDrinkPasses')||'{}');}catch(_){freePassesById={};}
+  <div class="dialog-backdrop" id="settingsBackdrop" hidden>
+    <section class="settings-card" id="settingsDialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
+      <header class="settings-header">
+        <div><p class="eyebrow">GALAXY GAME</p><h2 id="settingsTitle">ការកំណត់កង់</h2></div>
+        <button class="icon-button" id="closeSettings" type="button" aria-label="បិទការកំណត់">✕</button>
+      </header>
 
-function drawWheel(items=wheelOptions){
-  wheelOptions=items;const count=items.length,arc=Math.PI*2/count,c=wheel.width/2,r=wheel.width*.47;
-  ctx.clearRect(0,0,wheel.width,wheel.height);
-  // rim glow
-  const rimGrad=ctx.createRadialGradient(c,c,r*0.85,c,c,r*1.02);
-  rimGrad.addColorStop(0,'rgba(255,240,200,0)');rimGrad.addColorStop(0.9,'rgba(255,235,180,0.08)');rimGrad.addColorStop(1,'rgba(255,220,120,0.3)');
-  ctx.fillStyle=rimGrad;ctx.beginPath();ctx.arc(c,c,r*1.02,0,Math.PI*2);ctx.fill();
-  items.forEach((option,index)=>{
-    const start=rotation+index*arc-Math.PI/2;
-    ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,start,start+arc);ctx.closePath();ctx.fillStyle=colors[index%colors.length];ctx.fill();
-    ctx.save();ctx.translate(c,c);ctx.rotate(start+arc/2);ctx.textAlign='right';ctx.textBaseline='middle';ctx.shadowColor='#0008';ctx.shadowBlur=6;ctx.fillStyle='#fff';
-    ctx.font='bold 44px system-ui, sans-serif';ctx.fillText(option.emoji,r-40,0);
-    ctx.font="bold 22px 'Noto Sans Khmer', system-ui";ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,0.35)';ctx.strokeText(option.short,r-110,0);ctx.fillText(option.short,r-110,0);
-    ctx.restore();
-  });
-  // center circle
-  ctx.beginPath();ctx.arc(c,c,r*0.28,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.95)';ctx.fill();
-  // draw inner logo via image element if available
-  const img=new Image();img.src='/Team_Smaoh_Sneha_Logo.svg';img.onload=()=>{ctx.save();ctx.beginPath();ctx.arc(c,c,r*0.22,0,Math.PI*2);ctx.closePath();ctx.clip();ctx.drawImage(img,c-r*0.22,c-r*0.22,r*0.44,r*0.44);ctx.restore();};
-  // outer gold ring
-  ctx.beginPath();ctx.arc(c,c,r*0.92,0,Math.PI*2);ctx.strokeStyle='rgba(255,220,130,0.95)';ctx.lineWidth=18;ctx.stroke();
-}
+      <section class="settings-section" aria-labelledby="wheelEditorTitle">
+        <div class="section-title-row"><div><h3 id="wheelEditorTitle">កែធាតុកង់</h3><p>ប្ដូរឈ្មោះ Emoji ពណ៌ និងលំដាប់។ ការកែប្រែត្រូវបានរក្សាទុកក្នុងឧបករណ៍នេះ។</p></div></div>
+        <div class="wheel-editor" id="wheelItemsEditor"></div>
+        <form class="add-option-form" id="addOptionForm">
+          <label class="field-label" for="newOptionName">ឈ្មោះធាតុថ្មី</label>
+          <div class="add-option-fields">
+            <input id="newOptionName" maxlength="40" placeholder="ឧ. លេងសំណួរ" required>
+            <input id="newOptionEmoji" maxlength="8" value="✨" aria-label="Emoji ធាតុថ្មី">
+            <input id="newOptionColor" type="color" value="#9b70e8" aria-label="ពណ៌ធាតុថ្មី">
+            <button class="btn-add" type="submit">＋ បន្ថែម</button>
+          </div>
+        </form>
+        <div class="settings-actions">
+          <button id="saveWheelOptions" class="btn-add" type="button">រក្សាទុកការកែប្រែ</button>
+          <button id="restoreWheelDefaults" class="btn-quiet" type="button">ស្ដារធាតុកង់ដើម</button>
+        </div>
+      </section>
 
-function savePasses(){try{localStorage.setItem('spinDrinkPasses',JSON.stringify(freePassesById));}catch(_) {}}
-function getPasses(playerId){return Math.max(0,Number(freePassesById[playerId])||0);} 
+      <section class="settings-section" aria-labelledby="spinSettingsTitle">
+        <h3 id="spinSettingsTitle">របៀបបង្វិល</h3>
+        <div class="settings-grid">
+          <label class="setting-field">ល្បឿនកង់
+            <select id="spinSpeed"><option value="verySlow">យឺតខ្លាំង</option><option value="slow">យឺត</option><option value="normal">ធម្មតា</option><option value="fast">លឿន</option><option value="veryFast">លឿនខ្លាំង</option></select>
+          </label>
+          <label class="setting-field">រយៈពេលបង្វិល
+            <select id="spinDuration"><option value="3">៣ វិនាទី</option><option value="5">៥ វិនាទី</option><option value="8">៨ វិនាទី</option><option value="10">១០ វិនាទី</option><option value="15">១៥ វិនាទី</option></select>
+          </label>
+          <label class="setting-field setting-field-wide">រចនាបថចលនា
+            <select id="animationStyle"><option value="smooth">បង្វិលរលូន</option><option value="bouncy">កន្ត្រាក់សប្បាយ</option><option value="cinematic">Galaxy បែបភាពយន្ត</option><option value="energetic">រហ័ស និងស្វាហាប់</option></select>
+          </label>
+        </div>
+      </section>
 
-function setResult(title,description){resultTitle.textContent=title;resultDesc.textContent=description;}
+      <section class="settings-section" aria-labelledby="effectsTitle">
+        <h3 id="effectsTitle">សំឡេង និងបែបផែន</h3>
+        <div class="toggle-list">
+          <label class="toggle-row"><span>សំឡេងបែបផែន</span><input id="soundEffects" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
+          <label class="toggle-row"><span>តន្ត្រីផ្ទៃខាងក្រោយ</span><input id="backgroundMusic" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
+          <label class="toggle-row"><span>ផ្កាយ និងធូលី Galaxy</span><input id="galaxyParticles" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
+          <label class="toggle-row"><span>ពន្លឺជុំវិញកង់</span><input id="wheelGlow" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
+        </div>
+        <label class="setting-field volume-field" for="masterVolume">សំឡេងសរុប <output id="volumeValue">៥០%</output>
+          <input id="masterVolume" type="range" min="0" max="100" step="1" value="50">
+        </label>
+      </section>
 
-async function requestJson(url,body,options={}){const headers={'Content-Type':'application/json'};const response=await fetch(url,{method:options.method||'POST',headers,body:JSON.stringify(body||{})});let data={};try{data=await response.json();}catch(_){ }if(!response.ok){const error=new Error(data.error||'សំណើមិនបានជោគជ័យ។');error.status=response.status;error.data=data;throw error;}return data;}
+      <footer class="settings-footer">
+        <p id="settingsStatus" role="status" aria-live="polite"></p>
+        <button id="resetAllSettings" class="btn-quiet" type="button">ស្ដារការកំណត់ទាំងអស់</button>
+      </footer>
+    </section>
+  </div>
 
-function updateState(next){if(next)state=next;renderAll();}
-async function refreshState(silent=false){try{const response=await fetch('/api/state',{cache:'no-store'});if(!response.ok)throw new Error('មិនអាចភ្ជាប់ទៅម៉ាស៊ីនហ្គេមបានទេ។');const data=await response.json();state=data.state;renderAll();}catch(error){if(!silent){setResult('មិនអាចភ្ជាប់ម៉ាស៊ីនហ្គេមបានទេ',error.message);spinButton.disabled=true;}}
-}
-
-function renderPlayers(){
-  if(!state)return;
-  const playerList=document.getElementById('playerList');
-  if(!playerList)return;
-  playerList.replaceChildren();
-  if(!state.players.length){
-    const empty=document.createElement('p');empty.className='empty-players';empty.textContent='មិនទាន់មានអ្នកលេងទេ។ បញ្ចូលឈ្មោះដើម្បីចាប់ផ្ដើម។';playerList.append(empty);return;
-  }
-  for(const player of state.players){
-    const chip=document.createElement('span');chip.className='player-chip'+(player.id===state.turnPlayerId?' current':'');
-    const name=document.createElement('strong');name.textContent=player.name;
-    const turn=document.createElement('small');turn.textContent=player.id===state.turnPlayerId?'វេនបច្ចុប្បន្ន':'លេងឥតគិតថ្លៃ';
-    chip.append(name,turn);playerList.append(chip);
-  }
-}
-function renderMoney(){
-  if(!state)return;
-  document.getElementById('poolAmount').textContent=Number(state.poolRiel||0).toLocaleString('en-US')+'៛';
-  document.getElementById('playerCount').textContent=String(state.players.length);
-  
-  
-    
-    
-}
-function renderControls(){if(!state)return;const busy=spinning||actionPending||!state.turnPlayerId||state.pendingAdvance;spinButton.disabled=busy;luckyMoneyBtn.disabled=busy||Number(state.poolRiel||0)===0;}
-function renderAll(){if(!state)return;renderPlayers();renderMoney();renderControls();if(!spinning)drawWheel(options.filter(option=>option.id!=='money'||Number(state.poolRiel||0)>0));}
-
-function playTick(){try{const audioCtx=window.AudioContext||window.webkitAudioContext;if(!audioCtx)return;const a=new audioCtx();const o=a.createOscillator();const g=a.createGain();o.type='triangle';o.frequency.value=520;g.gain.value=0.02;o.connect(g);g.connect(a.destination);o.start();setTimeout(()=>{o.stop();a.close();},30);}catch(_){}}
-
-// animateTo: 8-12s randomized, stops on server-provided outcome
-function animateTo(outcomeId,availableIds){
-  const spinOptions=options.filter(option=>availableIds.includes(option.id));
-  const winner=spinOptions.findIndex(option=>option.id===outcomeId);
-  if(winner<0)throw new Error('Invalid outcome');
-  const arc=Math.PI*2/spinOptions.length;drawWheel(spinOptions);
-  const start=rotation;const targetAngle=(Math.PI*2)-(winner*arc+arc/2);
-  const normalize=a=>((a%(Math.PI*2))+Math.PI*2)%(Math.PI*2);const current=normalize(start);let delta=normalize(targetAngle)-current; if(delta<0)delta+=Math.PI*2;
-  const extraTurns=5+Math.floor(Math.random()*5);const extra=delta+extraTurns*Math.PI*2;const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;const duration=reduce?1000:8000+Math.random()*4000;const begin=performance.now();spinning=true;renderControls();
-  return new Promise(resolve=>{
-    function ease(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
-    function frame(now){const t=Math.min(1,(now-begin)/duration);const eased=ease(t);rotation=start+extra*eased;drawWheel(spinOptions);const pointerAngle=(Math.PI*2-(((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2)))%(Math.PI*2);const segment=Math.floor(pointerAngle/arc);if(segment!==lastTick){lastTick=segment;playTick();}
-      if(t<1)requestAnimationFrame(frame);else{rotation=normalize(start+extra);drawWheel(spinOptions);spinning=false;resolve();}}
-    requestAnimationFrame(frame);
-  });
-}
-
-async function spin(){if(spinning||actionPending||!state||!state.turnPlayerId) return;spinButton.disabled=true;spinButton.textContent='✨ កំពុងរៀបចំ...';try{const payload=await requestJson('/api/spin',{playerId:state.turnPlayerId});await animateTo(payload.outcome.outcomeId,payload.availableOutcomeIds);state=payload.state;renderAll();showOutcome(payload);spinButton.textContent='🎯 បង្វិលកង់';}catch(err){if(err.data&&err.data.state)state=err.data.state;renderAll();setResult('មិនអាចបង្វិលបានទេ',err.message);spinButton.textContent='🎯 បង្វិលកង់';}}
-
-async function luckyMoney(){if(spinning||actionPending||!state||!state.turnPlayerId) return;await spin();}
-
-function showOutcome(payload){const option=options.find(o=>o.id===payload.outcome.outcomeId);if(!option)return;const outcome=payload.outcome;actionArea.replaceChildren();if(option.id==='money'){setResult('💰 '+outcome.playerName+' ឈ្នះ '+(Number(outcome.payoutRiel||0).toLocaleString('en-US')+'៛'),'ប្រាក់រង្វាន់');cardTitle.textContent='ឈ្នះទឹកប្រាក់!';cardDesc.textContent=outcome.playerName+' ឈ្នះ '+(Number(outcome.payoutRiel||0).toLocaleString('en-US')+'៛');resultCard.classList.add('show');resultCard.setAttribute('aria-hidden','false');}else{setResult(option.emoji+' '+option.title+' — '+outcome.playerName,option.desc);cardTitle.textContent=option.title;cardDesc.textContent=option.desc;resultCard.classList.add('show');resultCard.setAttribute('aria-hidden','false');}}
-
-closeResult.addEventListener('click',()=>{resultCard.classList.remove('show');resultCard.setAttribute('aria-hidden','true');});
-
-// player removal helper
-async function removePlayer(playerId){try{const response=await fetch('/api/players/'+encodeURIComponent(playerId),{method:'DELETE'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Cannot remove player');if(data.state)updateState(data.state);}catch(e){alert(e.message);}}
-
-// form submit for adding player
-const playerForm=document.getElementById('playerForm');if(playerForm){playerForm.addEventListener('submit',async e=>{e.preventDefault();const input=document.getElementById('playerName');if(!input||!input.value.trim())return;try{await requestJson('/api/players',{name:input.value.trim()});input.value='';refreshState();}catch(err){setResult('មិនអាចបន្ថែមបាន',err.message);}})}
-
-// attach events and init
-spinButton.addEventListener('click',spin);luckyMoneyBtn.addEventListener('click',luckyMoney);
-// support pointerdown for mobile responsiveness
-[spinButton,luckyMoneyBtn].forEach(btn=>btn.addEventListener('pointerdown',()=>btn.classList.add('pressed')));
-[spinButton,luckyMoneyBtn].forEach(btn=>btn.addEventListener('pointerup',()=>btn.classList.remove('pressed')));
-
-// initial render
-drawWheel(options);refreshState();window.setInterval(()=>{if(!spinning&&!actionPending)refreshState(true);},5000);
-</script>
+  <script src="/js/game.js" defer></script>
 </body>
 </html>

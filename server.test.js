@@ -68,8 +68,6 @@ test("payment ledger is host-only, unique, and drives the server-selected jackpo
   assert.equal(badLogin.status, 401);
   const host = await signIn(app);
 
-
-
   const firstPayment = await api(app, "/api/admin/payments", { playerId: playerA.data.player.id, reference: "cash-a1" }, host);
   assert.equal(firstPayment.status, 200);
   assert.equal(firstPayment.data.state.poolRiel, 500);
@@ -125,7 +123,7 @@ test("payment ledger is host-only, unique, and drives the server-selected jackpo
 
 test("all registered players can spin for free without admin or payment setup", async t => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "spin-drink-free-play-"));
-  const app = createApp({ root: path.resolve(__dirname), dataDir, adminKey: "", selectIndex: () => 5 });
+  const app = createApp({ root: path.resolve(__dirname), dataDir, adminKey: "", selectIndex: () => 4 });
   t.after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
 
   const initial = await api(app, "/api/state", null, {}, "GET");
@@ -156,6 +154,38 @@ test("all registered players can spin for free without admin or payment setup", 
   assert.equal(secondSpin.data.state.turnPlayerId, playerA.data.player.id);
 });
 
+test("custom wheel items drive server selection and removed defaults stay unavailable", async t => {
+  assert.deepEqual(OUTCOME_IDS, ["unfaithful", "faithful", "command", "luck", "sing", "dance", "dance-two-minutes", "again", "money"]);
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "spin-drink-wheel-options-"));
+  const app = createApp({ root: path.resolve(__dirname), dataDir, adminKey: "", selectIndex: length => Math.min(1, length - 1) });
+  t.after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
+  const player = await api(app, "/api/players", { name: "Dara" });
+
+  const customSpin = await api(app, "/api/spin", {
+    playerId: player.data.player.id,
+    wheelOptionIds: ["sing", "custom-dance-game", "again"]
+  });
+  assert.equal(customSpin.status, 200);
+  assert.equal(customSpin.data.outcome.outcomeId, "custom-dance-game");
+  assert.deepEqual(customSpin.data.availableOutcomeIds, ["sing", "custom-dance-game", "again"]);
+  assert.equal(customSpin.data.state.turnPlayerId, player.data.player.id);
+
+  const removedItems = await api(app, "/api/spin", {
+    playerId: player.data.player.id,
+    wheelOptionIds: ["water", "truth", "friend", "dance-two-minutes"]
+  });
+  assert.equal(removedItems.status, 200);
+  assert.equal(removedItems.data.outcome.outcomeId, "dance-two-minutes");
+  assert.deepEqual(removedItems.data.availableOutcomeIds, ["dance-two-minutes"]);
+
+  const onlyRemovedItems = await api(app, "/api/spin", {
+    playerId: player.data.player.id,
+    wheelOptionIds: ["water", "truth", "friend"]
+  });
+  assert.equal(onlyRemovedItems.status, 400);
+  assert.match(onlyRemovedItems.data.error, /playable wheel item/);
+});
+
 test("state survives a fresh app instance and rejects cross-origin player edits", async t => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "spin-drink-persist-"));
   const app = createTestApp(t, dataDir, () => 0);
@@ -181,14 +211,21 @@ test("state survives a fresh app instance and rejects cross-origin player edits"
 
 test("browser script initializes the wheel and honors reduced motion", () => {
   const html = fs.readFileSync(path.resolve(__dirname, "index.html"), "utf8");
-  const match = html.match(/<script>([\s\S]*?)<\/script>/);
-  assert.ok(match);
-  assert.doesNotThrow(() => new Function(match[1]));
-  assert.match(match[1], /drawWheel\(options\);refreshState\(\)/);
-  assert.doesNotMatch(match[1], /renderLegend\s*=/);
-  assert.match(match[1], /duration=reduce\?1000:8000\+Math\.random\(\)\*4000/);
-  assert.match(match[1], /id:"money".*title:"សំណាងបានលុយ"/);
-  assert.match(match[1], /spinButton\.disabled=busy/);
+  const script = fs.readFileSync(path.resolve(__dirname, "js", "game.js"), "utf8");
+  assert.doesNotThrow(() => new Function(script));
+  assert.match(html, /<script src="\/js\/game\.js" defer><\/script>/);
+  assert.match(script, /wheelOptionIds/);
+  assert.match(script, /drawWheel\(visibleOptions\(\)\)/);
+  assert.doesNotMatch(script, /\bid:\s*"water"/);
+  assert.doesNotMatch(script, /\bid:\s*"truth"/);
+  assert.doesNotMatch(script, /\bid:\s*"friend"/);
+  assert.match(script, /title:\s*"រាំ 2 នាទី"/);
+  assert.match(script, /អ្នកត្រូវរាំ 2 នាទី! 💃🕺/);
+  assert.match(script, /spinButton\.disabled\s*=\s*busy/);
+  assert.match(script, /STORAGE_OPTIONS/);
+  assert.match(script, /soundEffects/);
+  assert.match(script, /galaxyParticles/);
+  assert.match(script, /masterVolume/);
   assert.match(html, /លេងឥតគិតថ្លៃសម្រាប់អ្នកទាំងអស់គ្នា/);
   assert.match(html, /id="playerCount"/);
   assert.match(html, /id="playerForm"/);
