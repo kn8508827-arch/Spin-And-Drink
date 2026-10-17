@@ -12,7 +12,7 @@ A Khmer, mobile-first party wheel served by a small Node.js application.
 - A new **រាំ 2 នាទី** outcome. It does not start a timer automatically.
 - The default wheel no longer includes the three items marked in the supplied screenshot: water, truth-or-dare, and friend-picks.
 - The **សំណាងបានលុយ 💰** outcome appears only when a prize pool has been funded.
-- The server randomly chooses and records an outcome from the wheel item IDs sent by the browser; the browser cannot request a preferred result or change the prize pool.
+- The server randomly chooses and records an outcome from the wheel item IDs sent by the browser. Since the wheel is customizable in each browser, this casual game is not tamper-proof against a participant who modifies their browser request; the request cannot change the prize pool.
 - Optional host-only payment and prize-settlement API endpoints remain available for deployments that choose to fund a prize pool.
 
 ## Start locally
