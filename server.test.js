@@ -67,8 +67,8 @@ test("payment ledger is host-only, unique, and drives the server-selected jackpo
   const badLogin = await api(app, "/api/admin/auth", {}, adminHeaders("incorrect-host-key"));
   assert.equal(badLogin.status, 401);
   const host = await signIn(app);
-  const blockedSpin = await api(app, "/api/spin", { playerId: playerA.data.player.id });
-  assert.equal(blockedSpin.status, 409);
+
+
 
   const firstPayment = await api(app, "/api/admin/payments", { playerId: playerA.data.player.id, reference: "cash-a1" }, host);
   assert.equal(firstPayment.status, 200);
@@ -123,6 +123,39 @@ test("payment ledger is host-only, unique, and drives the server-selected jackpo
   assert.match(logo, /Team ស្មោះស្នេហ៍/);
 });
 
+test("all registered players can spin for free without admin or payment setup", async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "spin-drink-free-play-"));
+  const app = createApp({ root: path.resolve(__dirname), dataDir, adminKey: "", selectIndex: () => 5 });
+  t.after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
+
+  const initial = await api(app, "/api/state", null, {}, "GET");
+  assert.equal(initial.data.state.adminEnabled, false);
+  assert.equal(initial.data.state.turnPlayerId, null);
+  const emptySpin = await api(app, "/api/spin", { playerId: "nobody" });
+  assert.equal(emptySpin.status, 409);
+
+  const playerA = await api(app, "/api/players", { name: "Dara" });
+  const playerB = await api(app, "/api/players", { name: "Sophea" });
+  assert.equal(playerA.status, 201);
+  assert.equal(playerB.status, 201);
+  assert.equal(playerA.data.state.turnPlayerId, playerA.data.player.id);
+  assert.equal(playerA.data.state.paidCount, 0);
+
+  const firstSpin = await api(app, "/api/spin", { playerId: playerA.data.player.id });
+  assert.equal(firstSpin.status, 200);
+  assert.equal(firstSpin.data.outcome.playerName, "Dara");
+  assert.equal(firstSpin.data.outcome.outcomeId, "sing");
+  assert.equal(firstSpin.data.availableOutcomeIds.includes("money"), false);
+  assert.equal(firstSpin.data.state.poolRiel, 0);
+  assert.equal(firstSpin.data.state.payout, null);
+  assert.equal(firstSpin.data.state.turnPlayerId, playerB.data.player.id);
+
+  const secondSpin = await api(app, "/api/spin", { playerId: playerB.data.player.id });
+  assert.equal(secondSpin.status, 200);
+  assert.equal(secondSpin.data.outcome.playerName, "Sophea");
+  assert.equal(secondSpin.data.state.turnPlayerId, playerA.data.player.id);
+});
+
 test("state survives a fresh app instance and rejects cross-origin player edits", async t => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "spin-drink-persist-"));
   const app = createTestApp(t, dataDir, () => 0);
@@ -155,5 +188,8 @@ test("browser script initializes the wheel and honors reduced motion", () => {
   assert.doesNotMatch(match[1], /renderLegend\s*=/);
   assert.match(match[1], /duration=reduce\?1000:8000\+Math\.random\(\)\*4000/);
   assert.match(match[1], /id:"money".*title:"សំណាងបានលុយ"/);
+  assert.match(match[1], /spinButton\.disabled=busy/);
+  assert.match(html, /លេងឥតគិតថ្លៃសម្រាប់អ្នកទាំងអស់គ្នា/);
+  assert.match(html, /id="playerCount"/);
   assert.match(html, /id="playerForm"/);
 });
