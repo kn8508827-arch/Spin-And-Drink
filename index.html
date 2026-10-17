@@ -15,6 +15,22 @@
     </header>
 
     <main class="panel">
+      <section class="players-panel" aria-labelledby="playersTitle">
+        <h2 class="section-heading" id="playersTitle">👥 អ្នកលេង</h2>
+        <form class="player-form" id="playerForm">
+          <label class="sr-only" for="playerName">ឈ្មោះអ្នកលេង</label>
+          <input id="playerName" name="playerName" maxlength="40" autocomplete="off" placeholder="បញ្ចូលឈ្មោះអ្នកលេង" required>
+          <button class="btn-add" type="submit">បន្ថែម</button>
+        </form>
+        <div class="player-list" id="playerList" aria-live="polite"></div>
+        <p class="payment-note" id="paymentNote" role="status">អ្នកលេងម្នាក់បង់ 500៛។ ម្ចាស់ហ្គេមត្រូវបញ្ជាក់ការទូទាត់មុនពេលបង្វិល។</p>
+      </section>
+
+      <section class="pool-summary" aria-label="សង្ខេបប្រាក់រង្វាន់">
+        <div class="pool-stat"><span>ប្រាក់រង្វាន់</span><strong id="poolAmount">0៛</strong></div>
+        <div class="pool-stat"><span>អ្នកដែលបានបង់</span><strong id="paidCount">0</strong></div>
+      </section>
+
       <div class="top-visual">
         <img class="bg" src="/assets/bg-gradient.svg" alt="background">
         <div class="overlay"></div>
@@ -115,9 +131,31 @@ function updateState(next){if(next)state=next;renderAll();}
 async function refreshState(silent=false){try{const response=await fetch('/api/state',{cache:'no-store'});if(!response.ok)throw new Error('មិនអាចភ្ជាប់ទៅម៉ាស៊ីនហ្គេមបានទេ។');const data=await response.json();state=data.state;renderAll();}catch(error){if(!silent){setResult('មិនអាចភ្ជាប់ម៉ាស៊ីនហ្គេមបានទេ',error.message);spinButton.disabled=true;}}
 }
 
-function renderPlayers(){ /* minimal: state.players */ }
-function renderMoney(){if(!state)return;}
-function renderControls(){if(!state)return;spinButton.disabled=spinning||actionPending||state.paidCount===0||state.pendingAdvance;luckyMoneyBtn.disabled=spinButton.disabled;}
+function renderPlayers(){
+  if(!state)return;
+  const playerList=document.getElementById('playerList');
+  if(!playerList)return;
+  playerList.replaceChildren();
+  if(!state.players.length){
+    const empty=document.createElement('p');empty.className='empty-players';empty.textContent='មិនទាន់មានអ្នកលេងទេ។ បញ្ចូលឈ្មោះដើម្បីចាប់ផ្ដើម។';playerList.append(empty);return;
+  }
+  for(const player of state.players){
+    const chip=document.createElement('span');chip.className='player-chip'+(player.id===state.turnPlayerId?' current':'');
+    const name=document.createElement('strong');name.textContent=player.name;
+    const payment=document.createElement('small');payment.textContent=player.paid?'បានបង់':'រង់ចាំការបញ្ជាក់';
+    chip.append(name,payment);playerList.append(chip);
+  }
+}
+function renderMoney(){
+  if(!state)return;
+  document.getElementById('poolAmount').textContent=Number(state.poolRiel||0).toLocaleString('en-US')+'៛';
+  document.getElementById('paidCount').textContent=String(Number(state.paidCount)||0);
+  const paymentNote=document.getElementById('paymentNote');
+  paymentNote.textContent=state.adminEnabled
+    ?'អ្នកលេងម្នាក់បង់ 500៛។ ម្ចាស់ហ្គេមត្រូវបញ្ជាក់ការទូទាត់មុនពេលបង្វិល។'
+    :'ការបញ្ជាក់ការទូទាត់មិនទាន់រៀបចំទេ។ សូមទាក់ទងម្ចាស់ហ្គេម។';
+}
+function renderControls(){if(!state)return;spinButton.disabled=spinning||actionPending||!state.turnPlayerId||state.paidCount===0||state.pendingAdvance;luckyMoneyBtn.disabled=spinButton.disabled;}
 function renderAll(){if(!state)return;renderPlayers();renderMoney();renderControls();}
 
 function playTick(){try{const audioCtx=window.AudioContext||window.webkitAudioContext;if(!audioCtx)return;const a=new audioCtx();const o=a.createOscillator();const g=a.createGain();o.type='triangle';o.frequency.value=520;g.gain.value=0.02;o.connect(g);g.connect(a.destination);o.start();setTimeout(()=>{o.stop();a.close();},30);}catch(_){}}
@@ -160,7 +198,7 @@ spinButton.addEventListener('click',spin);luckyMoneyBtn.addEventListener('click'
 [spinButton,luckyMoneyBtn].forEach(btn=>btn.addEventListener('pointerup',()=>btn.classList.remove('pressed')));
 
 // initial render
-renderLegend=function(){/* legend omitted for brevity */};drawWheel(options);refreshState();window.setInterval(()=>{if(!spinning&&!actionPending)refreshState(true);},5000);
+drawWheel(options);refreshState();window.setInterval(()=>{if(!spinning&&!actionPending)refreshState(true);},5000);
 </script>
 </body>
 </html>
