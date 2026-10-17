@@ -1,0 +1,32 @@
+/* premium-ui.css - styles for premium 3D UI */
+:root{--navy:#0b3b6f;--sky:#67b9ff;--gold1:#f6c85f;--gold2:#d99a25;--glass:rgba(255,255,255,0.14);--muted:#6b7a8a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Khmer","Khmer OS System",system-ui,-apple-system,sans-serif;background:#0b2a4a;color:#072034;min-height:100vh}
+.wrap{max-width:980px;margin:18px auto;padding:18px}
+.header{display:flex;align-items:center;gap:14px}
+.logo{width:84px;height:84px;border-radius:50%;overflow:hidden;border:4px solid rgba(255,230,150,0.9);box-shadow:0 8px 30px rgba(0,0,0,0.45);background:linear-gradient(180deg,var(--navy),#12375a)}
+.logo img{width:100%;height:100%;object-fit:cover}
+.title{flex:1}
+.title h1{margin:0;font-size:20px;color:var(--gold1);text-shadow:0 4px 10px rgba(0,0,0,0.6);letter-spacing:0.03em}
+.title p{margin:4px 0 0;color:#dff0ff;font-size:13px}
+.panel{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 30px 80px rgba(3,8,20,0.6)}
+.top-visual{position:relative;height:180px;border-radius:14px;background:linear-gradient(180deg,#6fc8ff 0%,#3d88d6 55%,#183a67 100%);overflow:hidden;margin-bottom:12px}
+.top-visual img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.85}
+.top-visual .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.18))}
+.wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
+canvas#wheel{width:92vw;max-width:760px;height:auto;border-radius:50%;display:block;background:transparent}
+.pointer{width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:28px solid #ffd76f;position:relative;top:-24px;z-index:10;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.5));}
+.center-cap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.buttons{width:92vw;max-width:760px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.btn-3d{padding:14px 18px;border-radius:14px;font-weight:900;font-size:18px;cursor:pointer;box-shadow:0 12px 0 rgba(0,0,0,0.18),0 28px 60px rgba(0,0,0,0.45);transform:translateY(0);transition:transform .12s ease,box-shadow .12s ease}
+.btn-3d:active{transform:translateY(2px);box-shadow:0 8px 0 rgba(0,0,0,0.12)}
+.btn-gold{background:linear-gradient(180deg,var(--gold1),var(--gold2));color:#2b1500;border:2px solid rgba(255,255,255,0.25)}
+.btn-money{background:linear-gradient(180deg,#bdf0b6,#8bd07f);color:#08321a;border:2px solid rgba(255,255,255,0.22)}
+.result-card{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.92);min-width:260px;padding:18px;border-radius:14px;background:linear-gradient(180deg,#fffdf7,#fff7d9);box-shadow:0 40px 120px rgba(2,8,20,0.6);z-index:300;display:none}
+.result-card.show{display:block;animation:pop .28s ease-out both}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.92);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.grid-controls{display:flex;gap:10px;justify-content:center;margin-top:12px}
+.control-card{background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));padding:10px 12px;border-radius:12px;color:#fff;text-align:center;min-width:90px}
+.player-chip{display:inline-block;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.03);color:#fff;margin:6px 6px 0 0}
+.footer{margin-top:18px;color:#c7e8ff;text-align:center}
+@media(min-width:860px){canvas#wheel{width:760px;height:760px}}
