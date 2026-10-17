@@ -1,30 +1,31 @@
-# Lucky Party Wheel — GitHub + Railway
+# Spin-And-Drink — កង់សំណាងជាក្រុម
 
-This is a simple static web app served by a tiny Node.js HTTP server. It has no database, login, API key, or external API dependency.
+A Khmer, mobile-first party wheel served by a small Node.js HTTP server. The game has no database, login, API key, or external API dependency.
+
+## Game rules and features
+
+- **អត់ស្មោះ:** penalty of two glasses. Players can choose a non-alcoholic drink or skip.
+- **ស្មោះ:** escape the drinking turn.
+- **បញ្ជាមិត្តម្នាក់:** name another player to drink one glass; they can choose a non-alcoholic drink or skip.
+- **សំណាង ៤ ដង:** grants four passes. One pass waives the drink cost for one drinking turn. Passes belong to a player and are saved with the player list in that browser.
+- Other outcomes include water, singing, a suitable truth-or-dare prompt, a friend-picked challenge, dancing, and another spin.
+- Spin ticks and a short celebration tune play through the browser, with a sound toggle.
+- The requested photo and laughter outcomes are not on the wheel.
+
+## Run locally
+
+Install Node.js 18 or newer, then run `npm start` and open `http://localhost:3000`. The player list and lucky passes stay on that device; game rooms and cross-device synchronization are not included.
 
 ## Deploy with GitHub and Railway
 
-### 1. Upload to GitHub
-1. Sign in to GitHub and create a new repository, for example `lucky-party-wheel`.
-2. Upload the files in this folder to the repository root:
-   - `index.html`
-   - `server.js`
-   - `package.json`
-   - `README.md`
-3. Commit the files to the main branch.
+1. Commit the files in this folder to the desired GitHub repository.
+2. In Railway, create a project using **Deploy from GitHub Repo** and select that repository.
+3. Railway should detect Node.js and run the `start` script (`node server.js`).
+4. In the service networking settings, generate a public domain if one is not already assigned.
+5. Open the generated HTTPS address on a phone and try the wheel.
 
-### 2. Deploy on Railway
-1. Sign in at https://railway.com/
-2. Create a new project and choose **Deploy from GitHub Repo**.
-3. Connect GitHub if asked, then select `lucky-party-wheel`.
-4. Railway should detect Node.js and use the start script `node server.js`.
-5. After deployment, open the service's **Settings / Networking** area and generate a public domain if one is not already assigned.
-6. Open the generated HTTPS URL on your phone and test the wheel.
+Railway may charge for hosting depending on the current plan and usage. Check its plan and usage details before deploying.
 
-## Low-cost notes
-- The wheel runs entirely in the browser; no database or paid API is needed for the MVP.
-- Railway hosting may incur charges depending on your plan and usage. Check the current Railway plan/usage page before deploying.
-- Because this first version is a static single-player wheel, GitHub Pages is another possible low-cost/free hosting choice. Railway becomes more useful if a backend or synchronized multiplayer rooms are added later.
+## Play safely
 
-## Important limitations
-This version does not yet synchronize multiple players or create rooms. Each visitor plays locally in their own browser. The wheel includes non-alcohol options and a skip option; never pressure anyone to drink or accept a challenge.
+No one should be pressured to drink or take a challenge. Choose a non-alcoholic drink or skip any result that feels uncomfortable.
