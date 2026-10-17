@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10264a">
+<title>Lucky Party Wheel</title>
+<style>
+:root{--navy:#10264a;--blue:#1768ac;--gold:#f3c969;--cream:#fff9ec;--ink:#17233b;--muted:#64748b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Noto Sans Khmer",sans-serif;color:var(--ink);background:radial-gradient(circle at top,#254d7e 0,#10264a 48%,#08162d 100%);padding:22px 14px 36px}
+.wrap{max-width:780px;margin:0 auto}
+header{text-align:center;color:white;margin:5px 0 20px}
+.logo{font-size:42px;line-height:1.2}
+h1{font-size:clamp(26px,6vw,38px);margin:8px 0 5px;color:var(--gold)}
+header p{margin:0;color:#e3ecfa;font-size:15px}
+.panel{background:var(--cream);border-radius:24px;padding:clamp(16px,4vw,28px);box-shadow:0 18px 48px #0005}
+.wheel-wrap{width:min(84vw,390px);margin:0 auto 18px;position:relative;aspect-ratio:1}
+canvas{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 13px #0002)}
+.pointer{position:absolute;z-index:2;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:38px solid #fff;filter:drop-shadow(0 3px 3px #0005)}
+.center-cap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border:5px solid #fff;border-radius:50%;background:linear-gradient(135deg,#ffd979,#d69a25);display:grid;place-items:center;font-size:29px;box-shadow:0 3px 12px #0003;pointer-events:none}
+button{border:0;border-radius:14px;padding:14px 18px;font:700 16px inherit;cursor:pointer;transition:transform .12s,opacity .12s}
+button:active{transform:scale(.98)}
+#spin{width:100%;background:linear-gradient(100deg,#f6d47d,#e9ae39);color:#2a1b00;font-size:18px;box-shadow:0 5px 0 #b67b17;margin:4px 0 16px}
+#spin:disabled{opacity:.6;cursor:wait}
+.result{background:#eaf2ff;border:1px solid #d2e3ff;border-radius:18px;padding:16px;text-align:center;min-height:100px}
+.result small{display:block;color:var(--muted);font-weight:700;margin-bottom:5px}
+#resultTitle{font-size:23px;font-weight:800;color:var(--navy);margin-bottom:4px}
+#resultDesc{font-size:14px;color:#465775}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+.item{background:#fff;border:1px solid #e7eaf0;border-radius:14px;padding:11px 12px;min-height:82px}
+.item strong{display:block;font-size:15px;margin-bottom:3px}
+.item span{display:block;font-size:12px;color:var(--muted);line-height:1.45}
+.footer{color:#d9e6f7;text-align:center;font-size:12px;line-height:1.7;margin:18px auto 0;max-width:620px}
+@media(max-width:430px){body{padding:16px 10px 28px}.grid{gap:8px}.item{padding:10px}.item strong{font-size:14px}.center-cap{width:64px;height:64px;font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="logo">🎉 🍀 🎡</div><h1>Lucky Party Wheel</h1><p>បង្វិលសំណាង • លេងសប្បាយជាមួយមិត្តភក្តិ</p></header>
+<main class="panel">
+<div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel" width="900" height="900" aria-label="កង់បង្វិលសកម្មភាព"></canvas><div class="center-cap">🎡</div></div>
+<button id="spin">🎯 បង្វិលកង់ឥឡូវនេះ</button>
+<section class="result" aria-live="polite"><small>លទ្ធផលរបស់អ្នក</small><div id="resultTitle">ត្រៀមខ្លួនហើយឬនៅ? 😄</div><div id="resultDesc">ចុចប៊ូតុងខាងលើ ដើម្បីចាប់ផ្តើមលេង</div></section>
+<div class="grid" id="legend"></div>
+</main>
+<p class="footer">💧 ជម្រើសគ្មានស្រា និងការរួចខ្លួនតែងតែអាចជ្រើសបាន។ មិនបង្ខំអ្នកណាឱ្យផឹក ឬធ្វើអ្វីដែលមិនស្រួលចិត្តទេ។ សូមលេងដោយសុវត្ថិភាព!</p>
+</div>
+<script>
+const options = [
+ {emoji:"💧",title:"ផឹកទឹកមួយកែវ",desc:"ជម្រើសគ្មានស្រា"},
+ {emoji:"😂",title:"និយាយរឿងកំប្លែង",desc:"ធ្វើឱ្យមិត្តភក្តិសើច"},
+ {emoji:"🎤",title:"ច្រៀងមួយបទ",desc:"បង្ហាញសមត្ថភាព"},
+ {emoji:"🃏",title:"Truth or Dare",desc:"សំណួរ ឬបញ្ហាប្រឈមសមរម្យ"},
+ {emoji:"🛡️",title:"រួចខ្លួនមួយជុំ",desc:"មិនចាំបាច់ផឹក"},
+ {emoji:"👥",title:"ជ្រើសមិត្តម្នាក់",desc:"ឱ្យគេជ្រើសបញ្ហាប្រឈម"},
+ {emoji:"💃",title:"រាំ 5 វិនាទី",desc:"បង្កើតបរិយាកាសសប្បាយ"},
+ {emoji:"🎁",title:"បង្វិលម្ដងទៀត",desc:"សាកល្បងសំណាងម្ដងទៀត"}
+];
+const colors=["#1b72a8","#f2c45f","#e86f51","#68a88c","#7664b5","#f09b50","#3f8fbd","#d9ad35"];
+const canvas=document.getElementById("wheel"),ctx=canvas.getContext("2d"),N=options.length,arc=Math.PI*2/N;
+let rotation=0,spinning=false;
+function draw(){
+ const c=canvas.width/2,r=canvas.width*.47;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ options.forEach((o,i)=>{
+   const start=rotation+i*arc-Math.PI/2;
+   ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,start,start+arc);ctx.closePath();
+   ctx.fillStyle=colors[i];ctx.fill();ctx.strokeStyle="#fff8e7";ctx.lineWidth=7;ctx.stroke();
+   ctx.save();ctx.translate(c,c);ctx.rotate(start+arc/2);
+   ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillStyle="#fff";
+   ctx.font="bold 29px system-ui, sans-serif";
+   ctx.shadowColor="#0004";ctx.shadowBlur=3;
+   ctx.fillText(o.emoji,r-27,0);
+   ctx.font="bold 21px 'Noto Sans Khmer',system-ui,sans-serif";
+   const short=["ផឹកទឹក","កំប្លែង","ច្រៀង","Truth/Dare","រួចខ្លួន","ជ្រើសមិត្ត","រាំ 5 វិ.","ម្ដងទៀត"][i];
+   ctx.fillText(short,r-75,0);
+   ctx.restore();
+ });
+ ctx.beginPath();ctx.arc(c,c,r,0,Math.PI*2);ctx.strokeStyle="#f8e7b5";ctx.lineWidth=12;ctx.stroke();
+}
+function showOption(i){
+ const o=options[i];
+ document.getElementById("resultTitle").textContent=o.emoji+" "+o.title;
+ document.getElementById("resultDesc").textContent=o.desc;
+}
+function spin(){
+ if(spinning)return;
+ spinning=true;const btn=document.getElementById("spin");btn.disabled=true;btn.textContent="✨ កំពុងបង្វិល...";
+ const start=rotation;
+ const winner=Math.floor(Math.random()*N);
+ // Pointer is at top; each segment is centered on its midpoint.
+ const target=((Math.PI*2) - (winner*arc+arc/2))%(Math.PI*2);
+ const current=((start%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+ const extra=6*Math.PI*2 + ((target-current+Math.PI*2)%(Math.PI*2));
+ const duration=3600,begin=performance.now();
+ function frame(now){
+   const t=Math.min(1,(now-begin)/duration),ease=1-Math.pow(1-t,4);
+   rotation=start+extra*ease;draw();
+   if(t<1)requestAnimationFrame(frame);
+   else{
+     rotation=((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);draw();
+     showOption(winner);spinning=false;btn.disabled=false;btn.textContent="🎯 បង្វិលម្ដងទៀត";
+     if(winner===7){setTimeout(()=>{document.getElementById("resultDesc").textContent="អ្នកអាចបង្វិលកង់ម្ដងទៀតបាន!";},150);}
+   }
+ }
+ requestAnimationFrame(frame);
+}
+document.getElementById("spin").addEventListener("click",spin);
+const legend=document.getElementById("legend");
+options.forEach(o=>{const div=document.createElement("div");div.className="item";const strong=document.createElement("strong");strong.textContent=o.emoji+" "+o.title;const span=document.createElement("span");span.textContent=o.desc;div.append(strong,span);legend.appendChild(div)});
+draw();
+</script>
+</body></html>
