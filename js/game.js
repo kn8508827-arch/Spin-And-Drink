@@ -173,7 +173,10 @@ function drawWheel(items = visibleOptions()) {
     ctx.restore();
   });
 
-  ctx.beginPath(); ctx.arc(center, center, radius * 0.28, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,.96)"; ctx.fill();
+  const hubGradient = ctx.createRadialGradient(center, center, 0, center, center, radius * 0.28);
+  hubGradient.addColorStop(0, "#1d4f80");
+  hubGradient.addColorStop(1, "#08152d");
+  ctx.beginPath(); ctx.arc(center, center, radius * 0.28, 0, Math.PI * 2); ctx.fillStyle = hubGradient; ctx.fill();
   ctx.beginPath(); ctx.arc(center, center, radius * 0.92, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(255,220,130,.98)"; ctx.lineWidth = 18; ctx.stroke();
 }
