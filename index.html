@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#10264a">
-  <meta name="description" content="កង់សំណាងសម្រាប់លេងជាមួយមិត្តភក្តិ។ អ្នកគ្រប់គ្នាអាចរំលាប់...">
+  <meta name="description" content="កង់សំណាងសម្រាប់លេងជាមួយមិត្តភក្តិ។ អ្នកគ្រប់គ្នាអាចរំលេចភាពសប្បាយបានដោយបង្វិលកង់។">
   <link rel="icon" href="/Team_Smaoh_Sneha_Logo.svg" type="image/svg+xml">
   <title>🎉🎯 Spin and Drink 🍻😆 · Team ស្មោះស្នេហ៍</title>
 <style>
-:root{color-scheme:light;--navy:#10264a;--navy2:#183d68;--blue:#2079b9;--gold:#f4ca67;--cream:#fffaf0;--ink:#17233b;--muted:#64748b;--line:#e6eaf0;--green:#197a62;--red:#a83e49;--shadow:0 18px 48px rgba(0,0,0,0.25)}
+:root{color-scheme:light;--navy:#10264a;--navy2:#183d68;--blue:#2079b9;--gold:#f4ca67;--cream:#fffaf0;--ink:#17233b;--muted:#64748b;--line:#e6eaf0;--green:#197a62;--red:#a83e49;--shadow:0 18px 48px rgba(0,0,0,.45)}
 *{box-sizing:border-box}
 html{min-height:100%;background:#0a1b34}
-body{margin:0;min-height:100vh;padding:22px 14px 36px;font-family:"Noto Sans Khmer","Khmer OS System",system-ui,-apple-system,sans-serif;color:var(--ink);background:radial-gradient(ellipse at 50% 10%,#0b2a4b 0%,#061227 40%,#030615 100%)}
+body{margin:0;min-height:100vh;padding:22px 14px 36px;font-family:"Noto Sans Khmer","Khmer OS System",system-ui,-apple-system,sans-serif;color:var(--ink);background:radial-gradient(ellipse at 50% 10%,rgba(255,255,255,.02),transparent 40%),linear-gradient(180deg,#071225 0%,#062036 100%)}
 button,input{font:inherit}
 button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;transition:transform .15s ease,filter .18s ease,opacity .18s ease}
 button:hover:not(:disabled){filter:brightness(1.04)}button:active:not(:disabled){transform:scale(.985)}button:disabled{opacity:.55;cursor:not-allowed}
@@ -23,7 +23,7 @@ header{position:relative;text-align:center;color:#fff;margin:2px 0 19px;padding:
 .team-name{font-size:15px;font-weight:900;letter-spacing:.03em;color:#f5d47d;text-shadow:0 2px 8px #001632;margin:0 0 2px}
 h1{font-size:clamp(27px,6vw,41px);line-height:1.35;margin:3px 0 2px;color:#ffdc83;text-shadow:0 2px 0 #80541c,0 5px 14px #0007}
 header p{margin:4px 0 0;color:#e4edf8;font-size:15px}
-#soundToggle{position:absolute;top:7px;right:0;width:46px;height:46px;padding:0;border-radius:50%;background:linear-gradient(145deg,#2b91db,#1261aa);color:#fff;font-size:21px;box-shadow:0 5px 15px rgba(0,0,0,0.25)}
+#soundToggle{position:absolute;top:7px;right:0;width:46px;height:46px;padding:0;border-radius:50%;background:linear-gradient(145deg,#2b91db,#1261aa);color:#fff;font-size:21px;box-shadow:0 5px 15px rgba(0,0,0,.35)}
 .panel{background:linear-gradient(155deg,#fffefa,#fff8e9 76%);border:2px solid #e7c96f;border-radius:27px;padding:clamp(14px,4vw,28px);box-shadow:var(--shadow),0 0 0 5px #ffffff12}
 /* ... rest of styles unchanged ... */
 .center-cap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:73px;height:73px;border:5px solid #fff;border-radius:50%;background:linear-gradient(135deg,#ffe69c,#d99a25);display:flex;align-items:center;justify-content:center;font-weight:900}
@@ -54,7 +54,7 @@ header p{margin:4px 0 0;color:#e4edf8;font-size:15px}
         <input id="playerName" type="text" maxlength="24" autocomplete="off" placeholder="បញ្ចូលឈ្មោះអ្នកលេង" aria-label="ឈ្មោះអ្នកលេង">
         <button type="submit">បន្ថែម</button>
       </form>
-      <p class="player-tip">អ្នកលេងម្នាក់បង់ 500៛ ម្តងក្នុងមួយជុំ។ អ្នកគ្រប់គ្រងត្រូវពិនិត្យ...</p>
+      <p class="player-tip">អ្នកលេងម្នាក់បង់ 500៛ ម្តងក្នុងមួយជុំ។ ចូលរួមដោយរីករាយ និងផឹកដោយមានទំនួលខុសត្រូវ។</p>
       <div class="player-list" id="playerList" aria-live="polite"></div>
       <div class="turn-note" id="turnNote" aria-live="polite"></div>
     </section>
@@ -63,42 +63,16 @@ header p{margin:4px 0 0;color:#e4edf8;font-size:15px}
       <div class="money-stat"><small>ប្រាក់រង្វាន់នៅសល់</small><strong id="poolAmount">0៛</strong></div>
       <div class="payout-note" id="payoutNote" aria-live="polite"></div>
     </section>
-    <div class="wheel-wrap"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="900" height="900" aria-label="កង់សំណាងសម្រាប់អ្នកចូលរួម"></canvas>
+    <div class="wheel-wrap"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="900" height="900" aria-label="កង់សំណាងសម្រាប់អ្នកចូលរៀន"></canvas>
     <button id="spin" type="button" disabled>🎯 បង្វិលកង់សំណាង</button>
     <button id="luckyMoney" type="button" disabled>💰 សំណាងបានលុយ</button>
     <section class="result" id="result" aria-live="polite" aria-atomic="true">
       <small>លទ្ធផល និងការណែនាំ</small>
       <div id="resultTitle">ត្រៀមខ្លួនហើយឬនៅ? 😄</div>
-      <div id="resultDesc">បន្ថែមអ្នកលេង និងឱ្យអ្នកគ្រប់គ្រងបញ្ជាក់ការបង់ប្រាក់ មុនចាប់ផ្តើម</div>
+      <div id="resultDesc">បន្ថែមអ្នកលេង និងឱ្យអ្នកគ្រប់គ្រងបញ្ជាក់ការបង់ប្រាក់ មុនចាប់ផ្តើម។</div>
       <div class="action-area" id="actionArea"></div>
     </section>
     <div class="grid" id="legend" aria-label="ច្បាប់ក្នុងកង់សំណាង"></div>
-    <details class="host-controls" id="hostControls">
-      <summary>🔐 ការគ្រប់គ្រងការបង់ប្រាក់ និងប្រាក់រង្វាន់</summary>
-      <div class="host-content">
-        <p>បញ្ចូលសោអ្នកគ្រប់គ្រង ដើម្បីបញ្ជាក់ប្រាក់ 500៛ និងការទូទាត់ប្រាក់...</p>
-        <form class="host-form" id="hostAuthForm">
-          <input id="hostKey" type="password" autocomplete="current-password" placeholder="សោអ្នកគ្រប់គ្រង" aria-label="សោអ្នកគ្រប់គ្រង">
-          <button type="submit">បើកការគ្រប់គ្រង</button>
-        </form>
-        <div class="host-status" id="hostStatus" role="status"></div>
-        <div class="host-actions" id="hostActions">
-          <form class="host-form" id="paymentForm">
-            <select id="paymentPlayer" aria-label="ជ្រើសអ្នកលេងមិនទាន់បង់ប្រាក់" required></select>
-            <input id="paymentReference" type="text" maxlength="128" autocomplete="off" placeholder="លេខយោងការបង់ប្រាក់" aria-label="លេខយោងការបង់ប្រាក់">
-            <button type="submit">បញ្ជាក់ 500៛</button>
-          </form>
-          <form class="host-form" id="settleForm" hidden>
-            <input id="settleReference" type="text" maxlength="128" autocomplete="off" placeholder="លេខយោងផ្ទេរប្រាក់រង្វាន់" aria-label="លេខយោងផ្ទេរប្រាក់">
-            <button type="submit">បញ្ជាក់ថាបានប្រគល់ប្រាក់រង្វាន់</button>
-          </form>
-          <form class="host-form" id="roundForm">
-            <button type="submit" id="newRoundButton">ចាប់ផ្តើមជុំថ្មី</button>
-          </form>
-          <p class="host-note">សូមបញ្ជាក់ការបង់ប្រាក់តែបន្ទាប់ពីពិនិត្យទទួលប្រាក់ពិតប្រាកដ។</p>
-        </div>
-      </div>
-    </details>
   </main>
   <p class="footer">💧 អាចជ្រើសភេសជ្ជៈគ្មានស្រា ឬរំលងពេលណាក៏បាន។ កុំបង្ខំអ្នកណាឱ្យផឹក។</p>
 </div>
@@ -122,9 +96,9 @@ const colors=["#176bb2","#e6ad2e","#de6653","#188b75","#765db2","#e28a3b","#368d
 const wheel=document.getElementById("wheel"),ctx=wheel.getContext("2d");
 const spinButton=document.getElementById("spin"),luckyMoneyBtn=document.getElementById("luckyMoney"),result=document.getElementById("result"),resultTitle=document.getElementById("resultTitle"),resultDesc=document.getElementById("resultDesc"),actionArea=document.getElementById("actionArea");
 const playerList=document.getElementById("playerList"),turnNote=document.getElementById("turnNote");
-let state=null,rotation=0,spinning=false,actionPending=false,holdWheelUntilNextSpin=false,soundEnabled=true,audioContext=null,lastTick=-1,adminKey="",adminUnlocked=false,wheelOptions=options;
+let state=null,rotation=0,spinning=false,actionPending=false,holdWheelUntilNextSpin=false,soundEnabled=true,audioContext=null,lastTick=-1,wheelOptions=options;
 let freePassesById={};
-try{freePassesById=JSON.parse(localStorage.getItem("spinDrinkPasses")||"{}");if(!freePassesById||typeof freePassesById!=="object"||Array.isArray(freePassesById))freePassesById={};}catch(_){freePassesById={}}
+try{freePassesById=JSON.parse(localStorage.getItem("spinDrinkPasses")||"{}");if(!freePassesById||typeof freePassesById!=="object"||Array.isArray(freePassesById))freePassesById={};}catch(_){freePassesById={};}
 
 function activeOptions(gameState){return gameState&&gameState.payout?options.filter(option=>option.id!=="money"):options;}
 function drawWheel(items=wheelOptions){
@@ -132,7 +106,7 @@ function drawWheel(items=wheelOptions){
   ctx.clearRect(0,0,wheel.width,wheel.height);
   items.forEach((option,index)=>{
     const start=rotation+index*arc-Math.PI/2;
-    ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,start,start+arc);ctx.closePath();ctx.fillStyle=colors[options.findIndex(item=>item.id===option.id)%colors.length];ctx.fill();ctx.strokeStyle="#ffd";ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,r,start,start+arc);ctx.closePath();ctx.fillStyle=colors[options.findIndex(item=>item.id===option.id)%colors.length];ctx.fill();ctx.strokeStyle="#ffd";ctx.lineWidth=1;ctx.stroke();
     ctx.save();ctx.translate(c,c);ctx.rotate(start+arc/2);ctx.textAlign="right";ctx.textBaseline="middle";ctx.shadowColor="#0008";ctx.shadowBlur=4;ctx.fillStyle="#fff";
     ctx.font="bold 31px system-ui, sans-serif";ctx.fillText(option.emoji,r-25,0);
     ctx.font="bold 26px 'Noto Sans Khmer','Khmer OS System',system-ui,sans-serif";ctx.lineWidth=4;ctx.strokeStyle="#10264a99";ctx.strokeText(option.short,r-72,0);ctx.fillText(option.short,r-72,0);
@@ -142,39 +116,36 @@ function drawWheel(items=wheelOptions){
 }
 function savePasses(){try{localStorage.setItem("spinDrinkPasses",JSON.stringify(freePassesById));}catch(_) {}}
 function getPasses(playerId){return Math.max(0,Number(freePassesById[playerId])||0);} 
-function migrateOldPasses(){try{const old=JSON.parse(localStorage.getItem("spinDrinkPlayers")||"[]");if(Array.isArray(old))old.forEach(previous=>{const player=state.players.find(item=>item.name.toLocaleLowerCase("en-US")===(String(previous.name||"").toLocaleLowerCase("en-US"));if(player&&freePassesById[player.id]===undefined)freePassesById[player.id]=Math.max(0,Number(previous.freePasses)||0);});}catch(_){ } savePasses();}
+function migrateOldPasses(){try{const old=JSON.parse(localStorage.getItem("spinDrinkPlayers")||"[]");if(Array.isArray(old))old.forEach(previous=>{const player=state.players.find(item=>item.name.toLowerCase()===previous.name.toLowerCase());if(player&&previous.passes)freePassesById[player.id]=Number(previous.passes)||0;});savePasses();}catch(_) {}}
 function currentPaidPlayer(){return state&&state.players.find(player=>player.id===state.turnPlayerId)||null;}
 function formatRiel(amount){return Number(amount||0).toLocaleString("en-US")+"៛";}
 function setResult(title,description){resultTitle.textContent=title;resultDesc.textContent=description;}
 function addHint(text){const p=document.createElement("p");p.className="action-hint";p.textContent=text;actionArea.appendChild(p);} 
-function setHostStatus(message,kind=""){const el=document.getElementById("hostStatus");el.textContent=message;el.className="host-status"+(kind?" "+kind:" ");}
 
 async function requestJson(url,body,options={}){
-  const headers={"Content-Type":"application/json"};if(options.authKey)headers["X-Admin-Key"]=options.authKey;
+  const headers={"Content-Type":"application/json"};
   const response=await fetch(url,{method:options.method||"POST",headers,body:JSON.stringify(body||{})});
   let data={};try{data=await response.json();}catch(_){ }
-  if(!response.ok){if(response.status===401&&options.admin){adminKey="";adminUnlocked=false;}const error=new Error(data.error||"សំណើមិនបានជោគជ័យ។");error.status=response.status;error.data=data;throw error;}
+  if(!response.ok){const error=new Error(data.error||"សំណើមិនបានជោគជ័យ។");error.status=response.status;error.data=data;throw error;}
   return data;
 }
 function updateState(next){if(next)state=next;renderAll();}
 async function refreshState(silent=false){
-  try{const response=await fetch("/api/state",{cache:"no-store"});if(!response.ok)throw new Error("មិនអាចភ្ជាប់ទៅម៉ាស៊ីនហ្គេមបានទេ។");const data=await response.json();state=data.state;renderAll();}
-  catch(error){if(!silent){setResult("មិនអាចភ្ជាប់ម៉ាស៊ីនហ្គេមបានទេ",error.message);spinButton.disabled=true;}}
+  try{const response=await fetch("/api/state",{cache:"no-store"});if(!response.ok)throw new Error("មិនអាចភ្ជាប់ទៅម៉ាស៊ីនហ្គេមបានទេ។");const data=await response.json();state=data.state;renderAll();}catch(error){if(!silent){setResult("មិនអាចភ្ជាប់ម៉ាស៊ីនហ្គេមបានទេ",error.message);spinButton.disabled=true;}}
 }
-function renderPlayers(){playerList.replaceChildren();if(!state)return;state.players.forEach(player=>{const chip=document.createElement("div");chip.className="player-chip"+(state.turnPlayerId===player.id?" current":"");const name=document.createElement("strong");name.textContent=player.name;chip.appendChild(name);const status=document.createElement("small");status.className=player.paid?"paid-mark":"unpaid-mark";status.textContent=player.paid?"✓ បង់ 500៛":"⏳ មិនទាន់បង់";chip.appendChild(status);if(getPasses(player.id)>0){const passes=document.createElement("small");passes.textContent="🍀 "+getPasses(player.id);chip.appendChild(passes);}if(!player.paid){const remove=document.createElement("button");remove.type="button";remove.className="remove-player";remove.textContent="×";remove.setAttribute("aria-label","ដក "+player.name);remove.addEventListener("click",()=>removePlayer(player.id));chip.appendChild(remove);}playerList.appendChild(chip);});const current=currentPaidPlayer();turnNote.textContent=current?"ជុំទី "+state.round+" • វេន៖ "+current.name+" • សន្លឹកសំណាង "+getPasses(current.id)+" ដង":state.players.length?"បន្ថែមអ្នកលេង និងធ្វើការបង់ 500៛":"នៅទទេ";}
-function renderMoney(){if(!state)return;document.getElementById("paidCount").textContent=state.paidCount+" នាក់ / "+state.players.length+" នាក់";document.getElementById("poolAmount").textContent=formatRiel(state.poolRiel);const note=document.getElementById("payoutNote");note.className="payout-note";if(!state.payout){note.textContent=state.paidCount?"អ្នកចូលរួមម្នាក់ៗបង់ 500៛ • ប្រាក់រង្វាន់គណនាពីអ្នកដែលបង់":"បន្ថែមអ្នកលេងដើម្បីចាប់ផ្ដើម";}else{note.classList.add(state.payout.status==="pending"?"pending":"");note.textContent="💰 "+state.payout.playerName+" ឈ្នះ "+formatRiel(state.payout.amountRiel)+" • "+(state.payout.settledAt?"បានទូទាត់":"រង់ចាំទូទាត់");}}
-function renderHostControls(){if(!state)return;const actions=document.getElementById("hostActions");actions.classList.toggle("visible",adminUnlocked);const select=document.getElementById("paymentPlayer");const selected=select.value;select.replaceChildren();const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="ជ្រើសអ្នកមិនទាន់បង់";placeholder.disabled=true;placeholder.selected=true;select.appendChild(placeholder);state.players.filter(player=>!player.paid).forEach(player=>{const option=document.createElement("option");option.value=player.id;option.textContent=player.name;select.appendChild(option);});if(state.players.some(player=>player.id===selected&&!player.paid))select.value=selected;const settleForm=document.getElementById("settleForm");settleForm.hidden=!state.payout||state.payout.status!=="pending";const newRound=document.getElementById("newRoundButton");newRound.disabled=Boolean((state.paidCount&&!state.payout)||(state.payout&&state.payout.status!=="settled"));const paymentClosed=Boolean(state.payout);select.disabled=paymentClosed;document.getElementById("paymentReference").disabled=paymentClosed||state.players.every(player=>player.paid);}
-function renderControls(){if(!state)return;spinButton.disabled=spinning||actionPending||state.paidCount===0||state.pendingAdvance;luckyMoneyBtn.disabled=spinButton.disabled;if(state.pendingAdvance)spinButton.textContent="បញ្ចប់សកម្មភាពមុន";else if(state.paidCount===0)spinButton.textContent="រង់ចាំការបញ្ជាក់ 500៛";else spinButton.textContent=spinning?"✨ កំពុងបង្វិល...":"🎯 បង្វិលកង់សំណាង";luckyMoneyBtn.textContent=spinning?"✨ កំពុងរងចាំ...":"💰 សំណាងបានលុយ";const current=state.players.find(player=>player.id===state.turnPlayerId);document.getElementById("playerName").disabled=spinning;document.querySelector(".player-form button").disabled=spinning;wheelOptions=activeOptions(state);if(!spinning&&!holdWheelUntilNextSpin)drawWheel(wheelOptions);if(!current&&state.players.length===0)setResult("ត្រៀមខ្លួនហើយឬនៅ? 😄","បន្ថែមអ្នកលេង និងឱ្យអ្នកគ្��ប់គ្រងបញ្ជាក់ការបង់ប្រាក់ មុនចាប់ផ្ដើម");}
-function renderAll(){if(!state)return;renderPlayers();renderMoney();renderHostControls();renderControls();}
-function consumeLuckyPass(playerId){const count=getPasses(playerId);if(count<1)return"";freePassesById[playerId]=count-1;savePasses();renderPlayers();return "🍀 បានប្រើសន្លឹកសំណាង ១ ដង"}
-function restoreLatestResult(){if(!state||!state.latestSpin)return;const latest=state.latestSpin,option=options.find(item=>item.id===latest.outcomeId);if(!option)return;if(latest.outcomeId==="money")setResult("💰 "+latest.playerName+" ឈ្នះ "+formatRiel(latest.payoutRiel),"អ្នកគ្រប់គ្រងត្រូវប្រគល់ប្រាក់");else setResult(option.emoji+" "+option.title+" — "+latest.playerName,option.desc);}
-function renderLegend(){const legend=document.getElementById("legend");legend.replaceChildren();options.forEach(option=>{const card=document.createElement("div");card.className="item";const title=document.createElement("strong");title.textContent=option.emoji+" "+option.title;const description=document.createElement("span");description.textContent=option.desc;card.appendChild(title);card.appendChild(description);legend.appendChild(card);});}
-function getAudio(){if(!soundEnabled)return null;try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;if(!audioContext)audioContext=new Ctx();if(audioContext.state==="suspended")audioContext.resume();return audioContext;}catch(_){return null}}
+function renderPlayers(){playerList.replaceChildren();if(!state)return;state.players.forEach(player=>{const chip=document.createElement("div");chip.className="player-chip"+(state.turnPlayerId===player.id?" active":"");chip.textContent=player.name+ (getPasses(player.id)?" 🍀":"");chip.addEventListener("click",()=>{if(confirm("ដោះចេញអ្នកលេង " + player.name + " ?")) removePlayer(player.id);});playerList.appendChild(chip);});}
+function renderMoney(){if(!state)return;document.getElementById("paidCount").textContent=state.paidCount+" នាក់ / "+state.players.length+" នាក់";document.getElementById("poolAmount").textContent=formatRiel(state.payoutRiel);} 
+function renderControls(){if(!state)return;spinButton.disabled=spinning||actionPending||state.paidCount===0||state.pendingAdvance;luckyMoneyBtn.disabled=spinButton.disabled;}
+function renderAll(){if(!state)return;renderPlayers();renderMoney();renderControls();}
+function consumeLuckyPass(playerId){const count=getPasses(playerId);if(count<1)return"";freePassesById[playerId]=count-1;savePasses();renderPlayers();return "🍀 បានប្រើសន្លឹកសំណាង!";}
+function restoreLatestResult(){if(!state||!state.latestSpin)return;const latest=state.latestSpin,option=options.find(item=>item.id===latest.outcomeId);if(!option)return;if(latest.outcomeId==="money")setResult("💰 "+latest.playerName+" ឈ្នះ "+formatRiel(latest.payoutRiel),"ប្រាក់រង្វាន់គណនាពី "+state.paidCount+" នាក់ × 500៛។");else setResult(option.emoji+" "+option.title+" — "+latest.playerName,option.desc);}
+function renderLegend(){const legend=document.getElementById("legend");legend.replaceChildren();options.forEach(option=>{const card=document.createElement("div");card.className="item";const title=document.createElement("strong");title.textContent=option.emoji+" "+option.title;const desc=document.createElement("div");desc.className="muted";desc.textContent=option.desc;card.appendChild(title);card.appendChild(desc);legend.appendChild(card);});}
+function getAudio(){if(!soundEnabled)return null;try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;if(!audioContext)audioContext=new Ctx();if(audioContext.state==="suspended")audioContext.resume();return audioContext;}catch(_){return null;}}
 function tone(frequency,duration,gainValue,type){const audio=getAudio();if(!audio)return;const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.type=type||"sine";oscillator.frequency.value=frequency;gain.gain.value=gainValue;oscillator.connect(gain);gain.connect(audio.destination);oscillator.start();setTimeout(()=>{oscillator.stop();gain.disconnect();oscillator.disconnect();},duration*1000);}
 function playTick(){tone(620+Math.random()*90,.035,.025,"triangle");}
 function playWinSound(){if(!soundEnabled)return;const audio=getAudio();if(!audio)return;[523.25,659.25,783.99,1046.5].forEach((frequency,index)=>setTimeout(()=>tone(frequency,.42,.085,"sine"),index*180));}
 
-// Improved animateTo: smooth acceleration then ease-out, duration ~9s, stops exactly on selected result
+// Improved animateTo: smooth acceleration then ease-out, duration ~8-12s, stops exactly on selected result
 function animateTo(outcomeId,availableIds){
   const spinOptions=options.filter(option=>availableIds.includes(option.id));
   const winner=spinOptions.findIndex(option=>option.id===outcomeId);
@@ -187,17 +158,19 @@ function animateTo(outcomeId,availableIds){
   const currentAngle=normalize(start);
   const desiredAngle=normalize(targetAngle);
   let delta=desiredAngle-currentAngle; if(delta<0)delta+=Math.PI*2;
-  const extraTurns=6; // keep spins exciting but not too fast
+  const extraTurns=5 + Math.floor(Math.random()*5); // 5-9 extra turns for variety
   const extra=delta+extraTurns*Math.PI*2;
   const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const duration=reduceMotion?1000:9000; // 9 seconds default
+  const duration=reduceMotion?1000:8000+Math.random()*4000; // 8-12 seconds
   const begin=performance.now();
   spinning=true;renderControls();
   return new Promise(resolve=>{
-    function easeInOutCubic(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+    function ease(t){ // smooth accel then slow finish
+      return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; // easeInOutCubic
+    }
     function frame(now){
       const t=Math.min(1,(now-begin)/duration);
-      const eased=easeInOutCubic(t);
+      const eased=ease(t);
       rotation=start+extra*eased;
       drawWheel(spinOptions);
       const pointerAngle=(Math.PI*2-(((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2)))%(Math.PI*2);
@@ -208,23 +181,21 @@ function animateTo(outcomeId,availableIds){
   });
 }
 
-async function advancePendingTurn(){actionPending=true;renderControls();try{const response=await requestJson("/api/turn/advance",{});updateState(response.state);actionArea.replaceChildren();actionPending=false;renderControls();}catch(error){actionPending=false;setHostStatus(error.message,"error");renderControls();}}
+async function advancePendingTurn(){actionPending=true;renderControls();try{const response=await requestJson("/api/turn/advance",{});updateState(response.state);actionArea.replaceChildren();actionPending=false;renderControls();}catch(error){actionPending=false;renderControls();if(error.data&&error.data.state)state=error.data.state;renderAll();setResult("មិនអាចជំរុញវេនបានទេ",error.message);} }
 async function addPlayer(name){const response=await requestJson("/api/players",{name});updateState(response.state);return response.player}
 
 function showOutcome(payload){
   const option=options.find(item=>item.id===payload.outcome.outcomeId);if(!option)return;const outcome=payload.outcome,player=state.players.find(item=>item.id===outcome.playerId);
   actionArea.replaceChildren();
   if(option.id==="money"){
-    setResult("💰 "+outcome.playerName+" ឈ្នះ "+formatRiel(outcome.payoutRiel),"ប្រាក់រង្វាន់គណនាពី "+state.paidCount+" នាក់ × 500៛។ សូមអ្នកគ្រប់គ្រងប្រគល់ប្រាក់។");
-    // fun but light winning animation
-    try{playWinSound();const cap=document.querySelector('.center-cap');if(cap){cap.classList.add('win');setTimeout(()=>cap.classList.remove('win'),2200);}}
-    catch(_){ }
-  }else if(option.id==="unfaithful"){const freeMessage=consumeLuckyPass(outcome.playerId);setResult(option.emoji+" អត់ស្មោះ — "+outcome.playerName,(freeMessage?freeMessage+" ":"")+"អាចជ្រើសភេសជ្ជៈ ឬផឹកតាមច្បាប់។");}
+    setResult("💰 "+outcome.playerName+" ឈ្នះ "+formatRiel(outcome.payoutRiel),"ប្រាក់រង្វាន់គណនាពី "+state.paidCount+" នាក់ × 500៛។");
+    try{playWinSound();const cap=document.querySelector('.center-cap');if(cap){cap.classList.add('win');setTimeout(()=>cap.classList.remove('win'),2200);}}catch(_){ }
+  }else if(option.id==="unfaithful"){const freeMessage=consumeLuckyPass(outcome.playerId);setResult(option.emoji+" អត់ស្មោះ — "+outcome.playerName,(freeMessage?freeMessage+" ":"")+option.desc);} 
   else if(option.id==="faithful")setResult("🛡️ "+outcome.playerName+" ស្មោះ — រួចខ្លួន!","វេននេះមិនចាំបាច់ផឹកទេ។");
   else if(option.id==="luck"){if(player)freePassesById[player.id]=getPasses(player.id)+4;savePasses();renderPlayers();setResult("🍀 "+outcome.playerName+" សំណាង ៤ ដង!","អ្នកទទួលបានសន្លឹកសំណាង ៤ ដង។");}
-  else if(option.id==="command"){setResult("👉 "+outcome.playerName+" បញ្ជាមិត្តម្នាក់","ជ្រើសឈ្មោះមិត្តម្នាក់ឱ្យផឹក ១ កែវ។");}
-  else if(option.id==="again"){setResult("🎁 "+outcome.playerName+" បង្វិលម្ដងទៀត","វេននៅតែជារបស់ "+outcome.playerName+"។");addHint("ចុចប៊ូតុងខាងក្រោមដើម្បីបង្វិលម្ដងទៀត។");}
-  else{setResult(option.emoji+" "+option.title+" — "+outcome.playerName,option.desc);if(option.id==="water")addHint("ល្អណាស់! ការផឹកទឹកជួយរក្សាជាតិទឹកក្នុងខ្លួន។");if(option.id==="friend")addHint("ជ្រើសមិត្តម្នាក់ ហើយសុំឱ្យគេជ្រើសកិច្ចការដែលគ្រប់គ្នាអនុវត្ត។");}
+  else if(option.id==="command"){setResult("👉 "+outcome.playerName+" បញ្ជាមិត្តម្នាក់","ជ្រើសឈ្មោះមិត្តម្នាក់ឱ្យផឹក។");}
+  else if(option.id==="again"){setResult("🎁 "+outcome.playerName+" បង្វិលម្ដងទៀត","វេននៅតែជារបស់ "+outcome.playerName+"។");addHint("ចុច 🎯 បង្វិលម្ដងទៀត");}
+  else{setResult(option.emoji+" "+option.title+" — "+outcome.playerName,option.desc);if(option.id==="water")addHint("ល្អណាស់! ការផឹកទឹកជួយរក្សាសុខភាព។");}
   result.classList.remove("pop");void result.offsetWidth;result.classList.add("pop");
 }
 
@@ -235,31 +206,23 @@ async function spin(){
   try{
     const payload=await requestJson("/api/spin",{playerId});
     await animateTo(payload.outcome.outcomeId,payload.availableOutcomeIds);
-    state=payload.state;holdWheelUntilNextSpin=payload.outcome.outcomeId==="money";renderAll();showOutcome(payload);renderControls();
-  }catch(error){if(error.data&&error.data.state)state=error.data.state;renderAll();setResult("មិនអាចបង្វិលបានទេ",error.message);} 
+    state=payload.state;holdWheelUntilNextSpin=payload.outcome.outcomeId==="money";renderAll();showOutcome(payload);renderControls();spinButton.textContent="🎯 បង្វិលកង់សំណាង";
+  }catch(error){if(error.data&&error.data.state)state=error.data.state;renderAll();setResult("មិនអាចបង្វិលបានទេ",error.message);spinButton.textContent="🎯 បង្វិលកង់សំណាង";} 
 }
 
 // Lucky Money button triggers a normal spin; if the result is money, special animation plays
 async function luckyMoney(){
   if(spinning||actionPending||!state||!state.turnPlayerId) return;
-  // call spin which will handle server logic and animations
   await spin();
 }
 
-async function removePlayer(playerId){try{const response=await fetch("/api/players/"+encodeURIComponent(playerId),{method:"DELETE"});const data=await response.json();if(!response.ok)throw new Error(data.error||"មិនអាចដកអ្នកលេងបាន" );state=data.state;renderAll();}catch(error){setResult("មិនអាចដកអ្នកលេងបានទេ",error.message);} }
+async function removePlayer(playerId){try{const response=await fetch("/api/players/"+encodeURIComponent(playerId),{method:"DELETE"});const data=await response.json();if(!response.ok)throw new Error(data.error||"Cannot remove player");if(data.state)updateState(data.state);}catch(error){alert(error.message);} }
 
-document.getElementById("playerForm").addEventListener("submit",async event=>{event.preventDefault();const input=document.getElementById("playerName");if(!input.value.trim())return;try{const player=await addPlayer(input.value);input.value="";input.focus();setHostStatus("បានបន្ថែម "+player.name+"។ បញ្ជាក់ 500៛ បន្ទាប់ពីពិនិត្យ។");}catch(error){setResult("មិនអាចបន្ថែមអ្នកលេងបានទេ",error.message);} });
+document.getElementById("playerForm").addEventListener("submit",async event=>{event.preventDefault();const input=document.getElementById("playerName");if(!input.value.trim())return;try{const player=await addPlayer(input.value.trim());input.value="";}catch(error){setResult("មិនអាចបន្ថែមបាន",error.message);}});
 document.getElementById("spin").addEventListener("click",spin);
 document.getElementById("luckyMoney").addEventListener("click",luckyMoney);
-document.getElementById("soundToggle").addEventListener("click",event=>{soundEnabled=!soundEnabled;const button=event.currentTarget;button.textContent=soundEnabled?"🔊":"🔇";button.setAttribute("aria-label",soundEnabled?"បិទសំឡេង":"បើកសំឡេង");try{localStorage.setItem("spinDrinkSound",String(soundEnabled));}catch(_){}if(soundEnabled)playWinSound();});
+document.getElementById("soundToggle").addEventListener("click",event=>{soundEnabled=!soundEnabled;const button=event.currentTarget;button.textContent=soundEnabled?"🔊":"🔇";button.setAttribute("aria-label",soundEnabled?"បិទសំឡេង":"បើកសំឡេង");try{localStorage.setItem("spinDrinkSound",String(soundEnabled));}catch(_){}});
 
-document.getElementById("hostAuthForm").addEventListener("submit",async event=>{event.preventDefault();const input=document.getElementById("hostKey");adminKey=input.value;input.value="";try{const response=await requestJson("/api/admin/auth",{}, {authKey:adminKey});adminKey="";adminUnlocked=true;updateState(response.state);setHostStatus("បានបើកការគ្រប់គ្រង","success");}catch(error){adminKey="";adminUnlocked=false;renderHostControls();setHostStatus(error.message,"error");}});
-
-document.getElementById("paymentForm").addEventListener("submit",async event=>{event.preventDefault();try{const response=await requestJson("/api/admin/payments",{playerId:document.getElementById("paymentPlayer").value,reference:document.getElementById("paymentReference").value},{admin:true});updateState(response.state);setHostStatus("បានបញ្ញាតិការបង់ប្រាក់", "success");}catch(error){if(error.status===401)renderHostControls();setHostStatus(error.message,"error");}});
-
-document.getElementById("settleForm").addEventListener("submit",async event=>{event.preventDefault();try{const response=await requestJson("/api/admin/settle",{reference:document.getElementById("settleReference").value},{admin:true});updateState(response.state);document.getElementById("settleReference").value="";setHostStatus("បានបញ្ជាក់ការផ្ទេរ","success");}catch(error){if(error.status===401)renderHostControls();setHostStatus(error.message,"error");}});
-
-document.getElementById("roundForm").addEventListener("submit",async event=>{event.preventDefault();try{const response=await requestJson("/api/admin/round",{},{});holdWheelUntilNextSpin=false;updateState(response.state);actionArea.replaceChildren();setResult("ចាប់ផ្តើមជុំថ្មី","រួចរាល់");}catch(error){if(error.status===401)renderHostControls();setHostStatus(error.message,"error");}});
 try{soundEnabled=localStorage.getItem("spinDrinkSound")!=="false";}catch(_){ }
 const soundButton=document.getElementById("soundToggle");soundButton.textContent=soundEnabled?"🔊":"🔇";soundButton.setAttribute("aria-label",soundEnabled?"បិទសំឡេង":"បើកសំឡេង");
 renderLegend();drawWheel(options);refreshState();
