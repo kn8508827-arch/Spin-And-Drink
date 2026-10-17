@@ -3,7 +3,7 @@
 const DEFAULT_OPTIONS = [
   { id: "unfaithful", emoji: "🥃", title: "អត់ស្មោះ", desc: "ពិន័យ៖ ផឹក ២ កែវ។", color: "#176bb2" },
   { id: "faithful", emoji: "🛡️", title: "ស្មោះ", desc: "រួចខ្លួនមួយវេន — មិនចាំបាច់ផឹកទេ។", color: "#e6ad2e" },
-  { id: "command", emoji: "👉", title: "បញ្ជាមិត្តម្នាក់", desc: "ជ្រើសមិត្តម្នាក់ឱ្យធ្វើកិច្ចការ។", color: "#de6653" },
+  { id: "command", emoji: "👉", title: "បញ្ជាមិត្តម្នាក់", desc: "ជ្រើសមិត្តម្នាក់ឱ្យធ្វើកិច្ចការ។", color: "#d6493b" },
   { id: "luck", emoji: "🍀", title: "សំណាង ៤ ដង", desc: "ទទួលបានសន្លឹកសំណាង ៤ ដង។", color: "#188b75" },
   { id: "sing", emoji: "🎤", title: "ច្រៀងមួយបទ", desc: "ច្រៀងមួយបទ។", color: "#e28a3b" },
   { id: "dance", emoji: "💃", title: "រាំ ៥ វិនាទី", desc: "រាំ ៥ វិនាទី។", color: "#cb5d78" },
@@ -145,7 +145,8 @@ function drawWheel(items = visibleOptions()) {
     ctx.shadowColor = "rgba(0,0,0,.75)";
     ctx.shadowBlur = 8;
     const densityScale = Math.max(0.68, Math.min(1, 9 / count));
-    const emojiSize = Math.round(48 * densityScale);
+    // Increase emoji size for bolder look
+    const emojiSize = Math.round(64 * densityScale);
     ctx.font = `${emojiSize}px "Apple Color Emoji","Segoe UI Emoji",system-ui,sans-serif`;
     ctx.fillText(option.emoji || "✨", radius * 0.84, 0);
 
@@ -160,11 +161,29 @@ function drawWheel(items = visibleOptions()) {
     }
     const { fontSize, lines } = labelLayout;
     const lineHeight = fontSize * 1.18;
-    ctx.font = `800 ${fontSize}px "Noto Sans Khmer","Khmer OS System",system-ui,sans-serif`;
-    ctx.lineWidth = Math.max(3, fontSize * 0.16);
-    ctx.strokeStyle = "rgba(4,13,29,.68)";
+    // Use a heavier weight and larger outlines for a playful 3D style while preserving Khmer fonts
+    ctx.font = `900 ${fontSize}px "Noto Sans Khmer","Khmer OS System",system-ui,sans-serif`;
+
+    // 3D outline / drop shadow stroke (a slightly offset dark stroke)
+    ctx.save();
+    ctx.lineWidth = Math.max(6, fontSize * 0.32);
+    ctx.strokeStyle = "rgba(2,6,18,0.95)";
+    ctx.shadowBlur = Math.max(6, fontSize * 0.32);
+    // Slight offset to simulate depth; rotates with the segment
+    ctx.translate(Math.max(1, fontSize * 0.04), Math.max(1, fontSize * 0.06));
+    lines.forEach((line, lineIndex) => {
+      const y = (lineIndex - (lines.length - 1) / 2) * lineHeight;
+      ctx.strokeText(line, labelRadius, y, width);
+    });
+    ctx.restore();
+
+    // Main outline and fill
+    ctx.lineWidth = Math.max(4, fontSize * 0.24);
+    ctx.strokeStyle = "rgba(4,13,29,.85)";
     ctx.shadowBlur = Math.max(4, fontSize * 0.28);
+    // Use a warm off-white fill with strong contrast
     ctx.fillStyle = "#fff9e8";
+
     lines.forEach((line, lineIndex) => {
       const y = (lineIndex - (lines.length - 1) / 2) * lineHeight;
       ctx.strokeText(line, labelRadius, y, width);
@@ -183,11 +202,12 @@ function graphemeList(text) {
   catch (_) { return text.match(/\P{M}\p{M}*/gu) || Array.from(text); }
 }
 function fitFontSize(text, width, count) {
-  for (let size = Math.round(Math.max(17, 31 * Math.max(0.64, Math.min(1, 9 / count)))); size >= 16; size--) {
+  // Start larger so labels are more prominent; allow scaling down as needed for long text
+  for (let size = Math.round(Math.max(22, 44 * Math.max(0.64, Math.min(1, 9 / count)))); size >= 14; size--) {
     measureContext.font = `800 ${size}px "Noto Sans Khmer","Khmer OS System",system-ui,sans-serif`;
     if (graphemeList(text).every(cluster => measureContext.measureText(cluster).width <= width)) return size;
   }
-  return 16;
+  return 14;
 }
 function wrapLabel(text, width, fontSize) {
   measureContext.font = `800 ${fontSize}px "Noto Sans Khmer","Khmer OS System",system-ui,sans-serif`;
@@ -238,7 +258,9 @@ function renderPlayers() {
   const playerList = document.getElementById("playerList");
   playerList.replaceChildren();
   if (!state.players.length) {
-    const empty = document.createElement("p"); empty.className = "empty-players"; empty.textContent = "មិនទាន់មានអ្នកលេងទេ។ បញ្ចូលឈ្មោះដើម្បីចាប់ផ្ដើម។"; playerList.append(empty); return;
+    const empty = document.createElement("p"); empty.className = "empty-players"; empty.textContent = "មិនទាន់មានអ្នកលេងទេ។ បញ្ចូលឈ្មោ...";
+    playerList.appendChild(empty);
+    return;
   }
   for (const player of state.players) {
     const chip = document.createElement("span"); chip.className = "player-chip" + (player.id === state.turnPlayerId ? " current" : "");
@@ -277,15 +299,15 @@ function updateOptionEditor() {
     const row = document.createElement("fieldset"); row.className = "wheel-option-row"; row.dataset.optionId = option.id;
     const legend = document.createElement("legend"); legend.textContent = `ធាតុ ${index + 1}`; row.append(legend);
     const labelField = document.createElement("label"); labelField.className = "option-name-field"; labelField.textContent = "ឈ្មោះ";
-    const titleInput = document.createElement("input"); titleInput.type = "text"; titleInput.maxLength = 40; titleInput.value = option.title; titleInput.setAttribute("aria-label", `ឈ្មោះធាតុ ${index + 1}`); labelField.append(titleInput);
+    const titleInput = document.createElement("input"); titleInput.type = "text"; titleInput.maxLength = 40; titleInput.value = option.title; titleInput.setAttribute("aria-label", `ឈ្មោ...`);
     const emojiField = document.createElement("label"); emojiField.className = "option-emoji-field"; emojiField.textContent = "Emoji";
-    const emojiInput = document.createElement("input"); emojiInput.type = "text"; emojiInput.maxLength = 8; emojiInput.value = option.emoji; emojiInput.setAttribute("aria-label", `Emoji ធាតុ ${index + 1}`); emojiField.append(emojiInput);
+    const emojiInput = document.createElement("input"); emojiInput.type = "text"; emojiInput.maxLength = 8; emojiInput.value = option.emoji; emojiInput.setAttribute("aria-label", `Emoji ធាត...`);
     const colorField = document.createElement("label"); colorField.className = "option-color-field"; colorField.textContent = "ពណ៌";
-    const colorInput = document.createElement("input"); colorInput.type = "color"; colorInput.value = option.color; colorInput.setAttribute("aria-label", `ពណ៌ធាតុ ${index + 1}`); colorField.append(colorInput);
+    const colorInput = document.createElement("input"); colorInput.type = "color"; colorInput.value = option.color; colorInput.setAttribute("aria-label", `ពណ៌ធាតុ ${index + 1}`);
     const controls = document.createElement("div"); controls.className = "option-row-actions";
-    const up = document.createElement("button"); up.type = "button"; up.textContent = "↑"; up.title = "រំកិលឡើង"; up.setAttribute("aria-label", `រំកិលធាតុ ${index + 1} ឡើង`); up.disabled = index === 0;
-    const down = document.createElement("button"); down.type = "button"; down.textContent = "↓"; down.title = "រំកិលចុះ"; down.setAttribute("aria-label", `រំកិលធាតុ ${index + 1} ចុះ`); down.disabled = index === wheelOptions.length - 1;
-    const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "ដកចេញ"; remove.className = "option-remove"; remove.setAttribute("aria-label", `ដកធាតុ ${index + 1} ចេញ`); remove.disabled = wheelOptions.length <= 1;
+    const up = document.createElement("button"); up.type = "button"; up.textContent = "↑"; up.title = "រំកិលឡើង"; up.setAttribute("aria-label", `រំកិលធាតុ ${index + 1}`);
+    const down = document.createElement("button"); down.type = "button"; down.textContent = "↓"; down.title = "រំកិលចុះ"; down.setAttribute("aria-label", `រំកិលធាតុ ${index + 1}`);
+    const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "ដកចេញ"; remove.className = "option-remove"; remove.setAttribute("aria-label", `ដកចេញធាតុ ${index + 1}`);
     controls.append(up, down, remove); row.append(labelField, emojiField, colorField, controls); editor.append(row);
 
     titleInput.addEventListener("input", () => {
@@ -294,11 +316,11 @@ function updateOptionEditor() {
       if (current.id.startsWith("custom-") || current.id === "dance-two-minutes") current.desc = current.id === "dance-two-minutes" ? `អ្នកត្រូវ ${current.title}! 💃🕺` : current.title;
       persistOptions(); drawWheel(visibleOptions()); setSettingsStatus("កង់ត្រូវបានកែប្រែភ្លាមៗ។");
     });
-    emojiInput.addEventListener("input", () => { const current = wheelOptions.find(item => item.id === option.id); if (!current) return; current.emoji = Array.from(emojiInput.value.trim()).slice(0, 8).join("") || "✨"; persistOptions(); drawWheel(visibleOptions()); });
+    emojiInput.addEventListener("input", () => { const current = wheelOptions.find(item => item.id === option.id); if (!current) return; current.emoji = Array.from(emojiInput.value.trim()).slice(0, 8).join(""); persistOptions(); drawWheel(visibleOptions()); });
     colorInput.addEventListener("input", () => { const current = wheelOptions.find(item => item.id === option.id); if (!current) return; current.color = colorInput.value; persistOptions(); drawWheel(visibleOptions()); });
     up.addEventListener("click", () => reorderOption(index, -1));
     down.addEventListener("click", () => reorderOption(index, 1));
-    remove.addEventListener("click", () => { if (wheelOptions.length <= 1) return; wheelOptions.splice(index, 1); rotation = 0; persistOptions(); updateOptionEditor(); drawWheel(visibleOptions()); setSettingsStatus("បានដកធាតុចេញពីកង់។"); });
+    remove.addEventListener("click", () => { if (wheelOptions.length <= 1) return; wheelOptions.splice(index, 1); rotation = 0; persistOptions(); updateOptionEditor(); drawWheel(visibleOptions()); setSettingsStatus("បានដកធាតុចេញ។"); });
   });
 }
 function reorderOption(index, step) {
@@ -350,7 +372,7 @@ function showOutcome(payload) {
     setResult(`💰 ${summary}`, option.desc || "ប្រាក់រង្វាន់"); openResult(option.title, summary);
   } else if (option.id === "dance-two-minutes") {
     const message = option.title === "រាំ 2 នាទី" ? "អ្នកត្រូវរាំ 2 នាទី! 💃🕺" : `អ្នកត្រូវ ${option.title}! 💃🕺`;
-    setResult(message, "កុំចាប់ផ្ដើមកំណត់ម៉ោងដោយស្វ័យប្រវត្តិ។"); openResult(message, "មិនមានការរាប់ថយក្រោយដោយស្វ័យប្រវត្តិទេ។");
+    setResult(message, "កុំចាប់ផ្ដើមកំណត់ម៉ោងដោយស្វ័យប្រវត្តិ។"); openResult(message, "មិនមានការរ...{}");
   } else {
     const message = `${option.emoji} ${option.title} — ${outcome.playerName}`;
     setResult(message, option.desc); openResult(option.title, `${message}\n${option.desc}`);
@@ -540,7 +562,7 @@ document.getElementById("spin").addEventListener("click", spin);
 document.getElementById("luckyMoney").addEventListener("click", spin);
 document.getElementById("openSettings").addEventListener("click", openSettings);
 document.getElementById("closeSettings").addEventListener("click", closeSettings);
-document.getElementById("playersShortcut").addEventListener("click", () => { document.getElementById("playersSection").scrollIntoView({ behavior: "smooth", block: "start" }); document.getElementById("playerName").focus({ preventScroll: true }); });
+document.getElementById("playersShortcut").addEventListener("click", () => { document.getElementById("playersSection").scrollIntoView({ behavior: "smooth", block: "start" }); document.getElementById("playerName").focus(); });
 document.getElementById("closeResult").addEventListener("click", dismissResult);
 document.getElementById("addOptionForm").addEventListener("submit", addOption);
 document.getElementById("saveWheelOptions").addEventListener("click", saveWheelOptions);
