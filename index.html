@@ -9,18 +9,20 @@
 <style>
 :root{--navy:#10264a;--navy2:#173d6b;--blue:#1768ac;--gold:#f3c969;--cream:#fff9ec;--ink:#17233b;--muted:#64748b;--line:#e7eaf0;--green:#198b70;--red:#bd4d43}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;font-family:"Noto Sans Khmer","Khmer OS System",system-ui,-apple-system,sans-serif;color:var(--ink);background:radial-gradient(circle at 50% -8%,#3c71a6 0,#17395f 38%,#0b1b35 78%);padding:20px 14px 34px}
+body{margin:0;min-height:100vh;font-family:"Noto Sans Khmer","Khmer OS System",system-ui,-apple-system,sans-serif;color:var(--ink);background-color:#10264a;background-image:linear-gradient(180deg,rgba(8,26,64,.56) 0%,rgba(8,24,59,.72) 48%,rgba(8,22,45,.96) 100%),url("./assets/team-logo.jpg"),radial-gradient(circle at 50% -8%,#3c71a6 0,#17395f 38%,#0b1b35 78%);background-size:cover,min(94vw,980px) auto,cover;background-position:center,center 3%,center;background-repeat:no-repeat;background-attachment:fixed,fixed,fixed;padding:20px 14px 34px}
 button,input{font:inherit}
 button{border:0;border-radius:14px;padding:12px 16px;font-weight:750;cursor:pointer;transition:transform .12s,filter .15s,opacity .15s}
 button:hover{filter:brightness(1.04)}button:active{transform:scale(.98)}button:disabled{opacity:.56;cursor:wait}
 button:focus-visible,input:focus-visible{outline:3px solid #2879cb;outline-offset:3px}
 .wrap{max-width:800px;margin:0 auto}
 header{position:relative;text-align:center;color:#fff;margin:4px 0 18px;padding:8px 54px 0}
-.logo{font-size:40px;line-height:1.15;filter:drop-shadow(0 3px 4px #0005)}
-h1{font-size:clamp(26px,6vw,39px);line-height:1.35;margin:7px 0 2px;color:var(--gold);text-shadow:0 2px 0 #80541c,0 4px 12px #0006}
+.logo{width:clamp(88px,15vw,132px);aspect-ratio:1;margin:0 auto 8px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 0 0 4px #ffffff30,0 8px 24px #0007;filter:drop-shadow(0 3px 4px #0005);background:#eaf4ff}
+.logo img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 37%}
+.team-name{font-size:14px;font-weight:850;letter-spacing:.03em;color:#f3d47d;text-shadow:0 2px 8px #001632;margin:0 0 2px}
+h1{font-size:clamp(26px,6vw,39px);line-height:1.35;margin:3px 0 2px;color:var(--gold);text-shadow:0 2px 0 #80541c,0 4px 12px #0006}
 header p{margin:4px 0 0;color:#e3ecfa;font-size:15px}
 #soundToggle{position:absolute;top:4px;right:0;width:46px;height:46px;padding:0;border-radius:50%;background:linear-gradient(145deg,#2b91db,#1261aa);color:#fff;font-size:22px;box-shadow:0 4px 12px #0004}
-.panel{background:var(--cream);border:1px solid #ffefc7;border-radius:25px;padding:clamp(15px,4vw,28px);box-shadow:0 18px 48px #0005}
+.panel{background:linear-gradient(160deg,#fffdf6,var(--cream) 72%);border:2px solid #e4c366;border-radius:25px;padding:clamp(15px,4vw,28px);box-shadow:0 18px 48px #0006,0 0 0 5px #ffffff12}
 .players{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:18px}
 .section-heading{display:flex;align-items:center;gap:8px;font-size:17px;margin:0 0 10px;color:var(--navy)}
 .player-form{display:flex;gap:8px}
@@ -64,7 +66,8 @@ canvas{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 13px #0003)
 <body>
 <div class="wrap">
 <header>
-  <div class="logo" aria-hidden="true">🎉 🍀 🎡</div>
+  <div class="logo"><img src="./assets/team-logo.jpg" alt="Team ស្មោះស្នេហ៍"></div>
+  <div class="team-name">Team ស្មោះស្នេហ៍</div>
   <h1>កង់សំណាងជាក្រុម</h1>
   <p>បង្វិលវេនគ្នា លេងសប្បាយជាមួយមិត្តភក្តិ</p>
   <button id="soundToggle" type="button" aria-label="បិទសំឡេង" title="បិទសំឡេង">🔊</button>

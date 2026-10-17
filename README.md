@@ -10,6 +10,7 @@ A Khmer, mobile-first party wheel served by a small Node.js HTTP server. The gam
 - **សំណាង ៤ ដង:** grants four passes. One pass waives the drink cost for one drinking turn. Passes belong to a player and are saved with the player list in that browser.
 - Other outcomes include water, singing, a suitable truth-or-dare prompt, a friend-picked challenge, dancing, and another spin.
 - Spin ticks and a short celebration tune play through the browser, with a sound toggle.
+- The blue-and-gold Team ស្មោះស្នេហ៍ wallpaper is bundled at `assets/team-logo.jpg` and used as the page backdrop and brand mark.
 - The requested photo and laughter outcomes are not on the wheel.
 
 ## Run locally
