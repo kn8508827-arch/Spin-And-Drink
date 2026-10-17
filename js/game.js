@@ -1,4 +1,24 @@
 "use strict";
+(function installStartupErrorHandler() {
+  let reported = false;
+  function showStartupError(message) {
+    if (reported) return;
+    reported = true;
+    const title = document.getElementById("resultTitle");
+    const desc = document.getElementById("resultDesc");
+    if (title) title.textContent = "មិនអាចចាប់ផ្ដើមហ្គេមបានទេ";
+    if (desc) desc.textContent = "សូមផ្ទុកទំព័រឡើងវិញ។ " + message;
+  }
+  window.addEventListener("error", event => {
+    if (!(event.error instanceof Error)) return;
+    console.error("Lucky Party Wheel script error:", event.error.name, event.error.message);
+    showStartupError("(" + event.error.name + ")");
+  });
+  window.addEventListener("unhandledrejection", event => {
+    const reason = event.reason;
+    console.error("Lucky Party Wheel unhandled rejection:", reason && reason.name, reason && reason.message);
+  });
+})();
 
 const DEFAULT_OPTIONS = [
   { id: "unfaithful", emoji: "🥃", title: "អត់ស្មោះ", desc: "ពិន័យ៖ ផឹក ២ កែវ។", color: "#176bb2" },

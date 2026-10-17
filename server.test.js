@@ -226,6 +226,7 @@ test("browser script initializes the wheel and honors reduced motion", () => {
   assert.match(script, /soundEffects/);
   assert.match(script, /galaxyParticles/);
   assert.match(script, /masterVolume/);
+  assert.match(script, /installStartupErrorHandler/);
   assert.match(html, /លេងឥតគិតថ្លៃសម្រាប់អ្នកទាំងអស់គ្នា/);
   assert.match(html, /id="playerCount"/);
   assert.match(html, /id="playerForm"/);
