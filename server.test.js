@@ -6,12 +6,12 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { Readable } = require("node:stream");
-const { createApp, OUTCOME_IDS } = require("../server");
+const { createApp, OUTCOME_IDS } = require("./server");
 
 const HOST_KEY = "test-host-key-with-more-than-thirty-two-characters";
 
 function createTestApp(t, dataDir, selectIndex) {
-  const app = createApp({ root: path.resolve(__dirname, ".."), dataDir, adminKey: HOST_KEY, selectIndex });
+  const app = createApp({ root: path.resolve(__dirname), dataDir, adminKey: HOST_KEY, selectIndex });
   t.after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
   return app;
 }
@@ -118,7 +118,7 @@ test("payment ledger is host-only, unique, and drives the server-selected jackpo
   assert.equal(nextRound.data.state.poolRiel, 0);
   assert.equal(nextRound.data.state.players.every(player => !player.paid), true);
 
-  const logo = fs.readFileSync(path.resolve(__dirname, "../assets/team-logo.svg"), "utf8");
+  const logo = fs.readFileSync(path.resolve(__dirname, "Team_Smaoh_Sneha_Logo.svg"), "utf8");
   assert.match(logo, /<svg/);
   assert.match(logo, /Team ស្មោះស្នេហ៍/);
 });
@@ -137,7 +137,7 @@ test("state survives a fresh app instance and rejects cross-origin player edits"
   const confirmed = await api(app, "/api/admin/payments", { playerId: added.data.player.id, reference: "receipt-r1" }, host);
   assert.equal(confirmed.status, 200);
 
-  const reloadedApp = createApp({ root: path.resolve(__dirname, ".."), dataDir, adminKey: HOST_KEY, selectIndex: () => 0 });
+  const reloadedApp = createApp({ root: path.resolve(__dirname), dataDir, adminKey: HOST_KEY, selectIndex: () => 0 });
   const restored = await api(reloadedApp, "/api/state", null, {}, "GET");
   assert.equal(restored.data.state.paidCount, 1);
   assert.equal(restored.data.state.poolRiel, 500);
@@ -146,11 +146,14 @@ test("state survives a fresh app instance and rejects cross-origin player edits"
   assert.equal(expiredSession.status, 401);
 });
 
-test("browser script parses and the wheel keeps the 8.2-second ease-out", () => {
-  const html = fs.readFileSync(path.resolve(__dirname, "../index.html"), "utf8");
+test("browser script initializes the wheel and honors reduced motion", () => {
+  const html = fs.readFileSync(path.resolve(__dirname, "index.html"), "utf8");
   const match = html.match(/<script>([\s\S]*?)<\/script>/);
   assert.ok(match);
   assert.doesNotThrow(() => new Function(match[1]));
-  assert.match(match[1], /duration=reduceMotion\?1000:8200/);
+  assert.match(match[1], /drawWheel\(options\);refreshState\(\)/);
+  assert.doesNotMatch(match[1], /renderLegend\s*=/);
+  assert.match(match[1], /duration=reduce\?1000:8000\+Math\.random\(\)\*4000/);
   assert.match(match[1], /id:"money".*title:"សំណាងបានលុយ"/);
+  assert.match(html, /id="playerForm"/);
 });
