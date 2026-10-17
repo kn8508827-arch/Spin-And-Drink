@@ -4,7 +4,8 @@
   "private": true,
   "description": "Khmer mobile-first Lucky Party Wheel web app",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"
