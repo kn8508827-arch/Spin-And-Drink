@@ -18,7 +18,7 @@ button{color:inherit}
 @keyframes galaxyTurn{to{transform:rotate(360deg)}}
 .wrap{position:relative;z-index:1;max-width:980px;margin:18px auto;padding:18px}
 .header{display:flex;align-items:center;gap:14px;margin:0 0 15px}
-.logo{flex:0 0 84px;width:84px;height:84px;border-radius:50%;overflow:hidden;border:4px solid rgba(255,230,150,.9);box-shadow:0 8px 30px rgba(0,0,0,.45);background:linear-gradient(180deg,#12375a,#0c3a5a)}
+.logo{flex:0 0 96px;width:96px;height:96px;border-radius:50%;overflow:hidden;border:4px solid rgba(255,230,150,.9);box-shadow:0 8px 30px rgba(0,0,0,.45);background:linear-gradient(180deg,#12375a,#0c3a5a)}
 .logo img{width:100%;height:100%;object-fit:cover}
 .title{flex:1}.title h1{margin:0;font-size:22px;color:var(--gold);text-shadow:0 4px 14px rgba(0,0,0,.65);letter-spacing:.02em}.title p{margin:4px 0 0;color:#dff0ff;font-size:14px}
 .panel{position:relative;overflow:hidden;border:1px solid rgba(197,223,255,.14);border-radius:22px;padding:18px;background:linear-gradient(155deg,rgba(22,53,88,.78),rgba(9,27,53,.9));box-shadow:0 12px 30px rgba(0,0,0,.45)}
@@ -65,6 +65,6 @@ canvas#wheel{position:relative;z-index:1;width:100%;height:auto;border-radius:50
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 @media(min-width:860px){.wrap{padding:20px}.panel{padding:22px}.wheel-wrap{padding-top:7px}}
-@media(max-width:600px){.wrap{margin:8px auto;padding:10px}.header{gap:11px}.logo{flex-basis:68px;width:68px;height:68px;border-width:3px}.title h1{font-size:19px}.title p{font-size:12px}.panel{padding:14px}}
+@media(max-width:600px){.wrap{margin:8px auto;padding:10px}.header{gap:11px}.logo{flex-basis:76px;width:76px;height:76px;border-width:3px}.title h1{font-size:19px}.title p{font-size:12px}.panel{padding:14px}}
 @media(max-width:360px){.player-form{gap:6px}.player-form input{padding:10px;font-size:13px}.btn-add{padding:9px 11px}.settings-grid{grid-template-columns:1fr}.setting-field-wide{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
