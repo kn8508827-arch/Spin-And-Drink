@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS = {
   animationStyle: "cinematic",
   soundEffects: true,
   backgroundMusic: false,
+  soundMuted: false,
   volume: 50,
   galaxyParticles: true,
   wheelGlow: true
@@ -71,6 +72,7 @@ function readSettings() {
     animationStyle: validStyles.has(value.animationStyle) ? value.animationStyle : DEFAULT_SETTINGS.animationStyle,
     soundEffects: typeof value.soundEffects === "boolean" ? value.soundEffects : DEFAULT_SETTINGS.soundEffects,
     backgroundMusic: typeof value.backgroundMusic === "boolean" ? value.backgroundMusic : DEFAULT_SETTINGS.backgroundMusic,
+    soundMuted: typeof value.soundMuted === "boolean" ? value.soundMuted : DEFAULT_SETTINGS.soundMuted,
     volume: Number.isFinite(Number(value.volume)) ? Math.max(0, Math.min(100, Number(value.volume))) : DEFAULT_SETTINGS.volume,
     galaxyParticles: typeof value.galaxyParticles === "boolean" ? value.galaxyParticles : DEFAULT_SETTINGS.galaxyParticles,
     wheelGlow: typeof value.wheelGlow === "boolean" ? value.wheelGlow : DEFAULT_SETTINGS.wheelGlow
@@ -83,6 +85,12 @@ let state = null;
 let rotation = 0;
 let spinning = false;
 let actionPending = false;
+let gameStarted = false;
+let gamePaused = false;
+let startPending = false;
+let bottleAnimation = null;
+let bottleFrame = 0;
+let stateRefreshPromise = null;
 let lastTick = -1;
 let galaxyFrame = 0;
 let galaxyRunning = false;
@@ -97,24 +105,30 @@ let musicGain = null;
 let musicOscillators = [];
 let previousTickOscillator = null;
 const labelLayoutCache = new Map();
-const measureCanvas = document.createElement("canvas");
-const measureContext = measureCanvas.getContext("2d");
+let measureCanvas = null;
+let measureContext = null;
 
-const wheel = document.getElementById("wheel");
-const ctx = wheel.getContext("2d");
-const spinButton = document.getElementById("spin");
-const luckyMoneyBtn = document.getElementById("luckyMoney");
-const resultTitle = document.getElementById("resultTitle");
-const resultDesc = document.getElementById("resultDesc");
-const actionArea = document.getElementById("actionArea");
-const resultBackdrop = document.getElementById("resultBackdrop");
-const resultCard = document.getElementById("resultCard");
-const cardTitle = document.getElementById("cardTitle");
-const cardDesc = document.getElementById("cardDesc");
-const closeResult = document.getElementById("closeResult");
-const settingsBackdrop = document.getElementById("settingsBackdrop");
-const settingsDialog = document.getElementById("settingsDialog");
-const settingsStatus = document.getElementById("settingsStatus");
+let wheel = null;
+let ctx = null;
+let spinButton = null;
+let luckyMoneyBtn = null;
+let resultTitle = null;
+let resultDesc = null;
+let actionArea = null;
+let resultBackdrop = null;
+let resultCard = null;
+let cardTitle = null;
+let cardDesc = null;
+let closeResult = null;
+let settingsBackdrop = null;
+let settingsDialog = null;
+let settingsStatus = null;
+let bottleSpinner = null;
+let startButton = null;
+let pauseButton = null;
+let restartButton = null;
+let soundToggle = null;
+let starfieldContext = null;
 
 function visibleOptions() {
   return wheelOptions.filter(option => option.id !== "money" || Number(state && state.poolRiel || 0) > 0);
@@ -135,10 +149,21 @@ function drawWheel(items = visibleOptions()) {
 
   wheel.setAttribute("aria-label", "កង់សំណាង៖ " + items.map(option => option.title).join(" · "));
   items.forEach((option, index) => {
-    const start = rotation + index * arc - Math.PI / 2;
+    const start = index * arc - Math.PI / 2;
     const middle = start + arc / 2;
     ctx.beginPath(); ctx.moveTo(center, center); ctx.arc(center, center, radius, start, start + arc); ctx.closePath();
     ctx.fillStyle = option.color; ctx.fill();
+    ctx.save();
+    ctx.clip();
+    const gloss = ctx.createRadialGradient(center * 0.66, center * 0.58, radius * 0.04, center, center, radius * 1.15);
+    gloss.addColorStop(0, "rgba(255,255,255,.2)");
+    gloss.addColorStop(0.62, "rgba(255,255,255,.025)");
+    gloss.addColorStop(1, "rgba(0,0,0,.28)");
+    ctx.fillStyle = gloss;
+    ctx.fillRect(0, 0, wheel.width, wheel.height);
+    ctx.restore();
+    ctx.beginPath(); ctx.moveTo(center, center); ctx.arc(center, center, radius, start, start + arc); ctx.closePath();
+    ctx.strokeStyle = "rgba(255,239,195,.55)"; ctx.lineWidth = 4; ctx.stroke();
     ctx.save();
     ctx.translate(center, center);
     ctx.rotate(middle);
@@ -188,9 +213,14 @@ function drawWheel(items = visibleOptions()) {
     ctx.restore();
   });
 
-  ctx.beginPath(); ctx.arc(center, center, radius * 0.28, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,.96)"; ctx.fill();
+  const hub = ctx.createRadialGradient(center * .82, center * .76, radius * .02, center, center, radius * .3);
+  hub.addColorStop(0, "#fff8db"); hub.addColorStop(.45, "#d9b66b"); hub.addColorStop(1, "#68431f");
+  ctx.beginPath(); ctx.arc(center, center, radius * 0.29, 0, Math.PI * 2); ctx.fillStyle = hub; ctx.fill();
   ctx.beginPath(); ctx.arc(center, center, radius * 0.92, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(255,220,130,.98)"; ctx.lineWidth = 18; ctx.stroke();
+  ctx.beginPath(); ctx.arc(center, center, radius * 0.97, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,249,221,.6)"; ctx.lineWidth = 5; ctx.stroke();
+  updateBottlePose();
 }
 
 function graphemeList(text) {
@@ -232,6 +262,7 @@ function persistSettings() {
   safeWrite(STORAGE_SETTINGS, settings);
   document.body.classList.toggle("particles-disabled", !settings.galaxyParticles);
   document.body.classList.toggle("wheel-glow-disabled", !settings.wheelGlow);
+  updateSoundControl();
   updateGalaxyLoop();
   updateAudioLevels();
 }
@@ -242,21 +273,53 @@ function getPasses(playerId) {
 function setResult(title, description) { resultTitle.textContent = title; resultDesc.textContent = description; }
 async function requestJson(url, body, options = {}) {
   const headers = { "Content-Type": "application/json" };
-  const response = await fetch(url, { method: options.method || "POST", headers, body: JSON.stringify(body || {}) });
+  const response = await fetchWithTimeout(url, {
+    method: options.method || "POST",
+    headers,
+    ...(options.method === "GET" ? { cache: "no-store" } : { body: JSON.stringify(body || {}) })
+  });
   let data = {};
   try { data = await response.json(); } catch (_) {}
   if (!response.ok) { const error = new Error(data.error || "សំណើមិនបានជោគជ័យ។"); error.status = response.status; error.data = data; throw error; }
   return data;
 }
 
-async function refreshState(silent = false) {
-  try {
-    const response = await fetch("/api/state", { cache: "no-store" });
-    if (!response.ok) throw new Error("មិនអាចភ្ជាប់ទៅម៉ាស៊ីនហ្គេមបានទេ។");
-    const data = await response.json(); state = data.state; renderAll();
-  } catch (error) {
-    if (!silent) { setResult("មិនអាចភ្ជាប់ម៉ាស៊ីនហ្គេមបានទេ", error.message); spinButton.disabled = true; }
+async function fetchWithTimeout(url, options = {}) {
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  let timeoutId = 0;
+  let didTimeout = false;
+  const fetchOptions = controller ? { ...options, signal: controller.signal } : options;
+  const request = fetch(url, fetchOptions);
+  if (typeof window.setTimeout !== "function") return request;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      didTimeout = true;
+      if (controller) controller.abort();
+      reject(new Error("ការភ្ជាប់យឺតពេក។ សូមពិនិត្យបណ្ដាញ ហើយព្យាយាមម្ដងទៀត។"));
+    }, 12000);
+  });
+  try { return await Promise.race([request, timeout]); }
+  catch (error) {
+    if (didTimeout || error.name === "AbortError") throw new Error("ការភ្ជាប់យឺតពេក។ សូមពិនិត្យបណ្ដាញ ហើយព្យាយាមម្ដងទៀត។");
+    throw error;
+  } finally {
+    if (timeoutId && typeof window.clearTimeout === "function") window.clearTimeout(timeoutId);
   }
+}
+
+async function refreshState(silent = false) {
+  if (stateRefreshPromise) return stateRefreshPromise;
+  stateRefreshPromise = (async () => {
+    try {
+      const data = await requestJson("/api/state", null, { method: "GET" });
+      state = data.state; renderAll(); return true;
+    } catch (error) {
+      if (!silent) { setResult("មិនអាចភ្ជាប់ម៉ាស៊ីនហ្គេមបានទេ", error.message); if (spinButton) spinButton.disabled = true; }
+      return false;
+    }
+  })();
+  try { return await stateRefreshPromise; }
+  finally { stateRefreshPromise = null; }
 }
 function renderPlayers() {
   if (!state) return;
@@ -280,16 +343,94 @@ function renderMoney() {
   document.getElementById("playerCount").textContent = String(state.players.length);
 }
 function renderControls() {
-  if (!state) return;
-  const busy = spinning || actionPending || !state.turnPlayerId || state.pendingAdvance;
-  spinButton.disabled = busy || wheelOptions.length === 0;
-  luckyMoneyBtn.disabled = busy || Number(state.poolRiel || 0) === 0 || !wheelOptions.some(option => option.id === "money");
+  const busy = !state || spinning || actionPending || !state.turnPlayerId || state.pendingAdvance;
+  spinButton.disabled = busy || !gameStarted || gamePaused || wheelOptions.length === 0;
+  luckyMoneyBtn.disabled = busy || !gameStarted || gamePaused || !state || Number(state.poolRiel || 0) === 0 || !wheelOptions.some(option => option.id === "money");
   document.getElementById("openSettings").disabled = spinning || actionPending;
+  if (startButton) {
+    startButton.disabled = startPending || (gameStarted && !gamePaused);
+    startButton.textContent = startPending ? "⏳ កំពុងភ្ជាប់..." : gamePaused ? "▶ បន្ត" : gameStarted ? "✓ កំពុងលេង" : "▶ ចាប់ផ្ដើម";
+  }
+  if (pauseButton) {
+    pauseButton.disabled = !gameStarted || gamePaused;
+    pauseButton.textContent = gamePaused ? "Ⅱ បានផ្អាក" : "Ⅱ ផ្អាក";
+  }
+  if (restartButton) restartButton.disabled = !state || spinning || actionPending || startPending || state.pendingAdvance;
+  if (spinButton) {
+    spinButton.textContent = actionPending ? "⏳ កំពុងភ្ជាប់..." : spinning && gamePaused ? "Ⅱ បានផ្អាក" : spinning ? "✨ កំពុងបង្វិល..." : "🎯 បង្វិលកង់";
+  }
+  document.body.classList.toggle("game-paused", gamePaused);
 }
 function renderAll() {
   if (!state) return;
   renderPlayers(); renderMoney(); renderControls();
   if (!spinning) drawWheel(visibleOptions());
+  renderPendingAdvance();
+}
+
+function updateBottlePose() {
+  if (!bottleSpinner) return;
+  const angle = 270 - rotation * 180 / Math.PI;
+  bottleSpinner.style.transform = `rotate(${angle}deg)`;
+}
+
+function updateSoundControl() {
+  if (!soundToggle) return;
+  soundToggle.setAttribute("aria-pressed", settings.soundMuted ? "false" : "true");
+  soundToggle.textContent = settings.soundMuted ? "🔇 បិទសំឡេង" : "🔊 សំឡេង";
+}
+
+async function startGame() {
+  if (gameStarted && gamePaused) {
+    gamePaused = false;
+    if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
+    updateAudioLevels(); queueBottleFrame(); updateGalaxyLoop(); renderControls();
+    setResult("បានបន្តលេង", state && state.turnPlayerName ? `វេនរបស់ ${state.turnPlayerName}` : "បន្ថែមឈ្មោះអ្នកលេងដើម្បីចាប់ផ្ដើម។");
+    return;
+  }
+  if (gameStarted || startPending) return;
+  startPending = true; renderControls();
+  try {
+    if (!state) await refreshState();
+    if (!state) return;
+    gameStarted = true; gamePaused = false;
+    updateGalaxyLoop();
+    if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
+    queueBottleFrame();
+    if (!state.players.length) {
+      setResult("បន្ថែមអ្នកលេងដើម្បីចាប់ផ្ដើម", "បញ្ចូលឈ្មោះអ្នកលេងនៅខាងលើ រួចចុចបង្វិលកង់។");
+      document.getElementById("playerName").focus();
+    } else {
+      setResult("ត្រៀមរួចរាល់!", state.turnPlayerName ? `វេនរបស់ ${state.turnPlayerName}` : "ចុចបង្វិលកង់ដើម្បីលេង។");
+    }
+  } finally { startPending = false; renderControls(); }
+}
+
+function pauseGame() {
+  if (!gameStarted || gamePaused) return;
+  gamePaused = true;
+  if (bottleFrame) cancelAnimationFrame(bottleFrame);
+  bottleFrame = 0;
+  if (musicGain && audioContext) musicGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.06);
+  updateGalaxyLoop(); renderControls();
+  setResult("ហ្គេមបានផ្អាក", "ចុចបន្តដើម្បីបន្តចលនាដប និងការលេង។");
+}
+
+async function restartGame() {
+  if (!state || spinning || actionPending || startPending) return;
+  gameStarted = false; gamePaused = false;
+  if (bottleFrame) cancelAnimationFrame(bottleFrame);
+  bottleFrame = 0; bottleAnimation = null; rotation = 0;
+  updateBottlePose(); actionArea.replaceChildren(); dismissResult();
+  setResult("ត្រៀមខ្លួនហើយឬ?", "ចុចចាប់ផ្ដើម រួចបង្វិលកង់ដើម្បីលេង។ អ្នកលេង និងច្បាប់នៅដដែល។");
+  updateGalaxyLoop(); renderControls();
+  await refreshState();
+}
+
+async function toggleSound() {
+  settings.soundMuted = !settings.soundMuted;
+  if (!settings.soundMuted && (settings.soundEffects || settings.backgroundMusic)) await ensureAudio();
+  persistSettings(); setSettingsInputs();
 }
 
 function optionId(value) {
@@ -354,6 +495,7 @@ function setSettingsInputs() {
   document.getElementById("wheelGlow").checked = settings.wheelGlow;
   document.getElementById("masterVolume").value = String(settings.volume);
   document.getElementById("volumeValue").value = `${Math.round(settings.volume)}%`;
+  updateSoundControl();
 }
 function openSettings() { updateOptionEditor(); setSettingsInputs(); settingsBackdrop.hidden = false; document.body.classList.add("dialog-open"); document.getElementById("closeSettings").focus(); }
 function closeSettings() { settingsBackdrop.hidden = true; document.body.classList.remove("dialog-open"); document.getElementById("openSettings").focus(); }
@@ -365,7 +507,10 @@ function openResult(title, description) {
   cardTitle.textContent = title; cardDesc.textContent = description || "";
   resultBackdrop.hidden = false; document.body.classList.add("dialog-open"); closeResult.focus();
 }
-function dismissResult() { resultBackdrop.hidden = true; document.body.classList.remove("dialog-open"); }
+function dismissResult() {
+  resultBackdrop.hidden = true; document.body.classList.remove("dialog-open");
+  if (state && !spinning) { rotation = 0; drawWheel(visibleOptions()); }
+}
 function showOutcome(payload) {
   const option = wheelOptions.find(item => item.id === payload.outcome.outcomeId);
   if (!option) return;
@@ -383,15 +528,32 @@ function showOutcome(payload) {
     setResult(message, option.desc); openResult(option.title, `${message}\n${option.desc}`);
   }
   if (option.id === "command") {
-    const advance = document.createElement("button"); advance.type = "button"; advance.className = "btn-add"; advance.textContent = "បន្តវេន";
-    advance.addEventListener("click", async () => {
-      if (actionPending) return; actionPending = true; renderControls(); advance.disabled = true;
-      try { const data = await requestJson("/api/turn/advance", {}); state = data.state; renderAll(); actionArea.replaceChildren(); }
-      catch (error) { setResult("មិនអាចបន្តវេនបានទេ", error.message); }
-      finally { actionPending = false; renderControls(); }
-    });
-    actionArea.append(advance);
+    actionArea.append(createAdvanceButton());
   }
+}
+
+function createAdvanceButton() {
+  const advance = document.createElement("button");
+  advance.type = "button"; advance.className = "btn-add"; advance.textContent = "បន្តវេន";
+  advance.addEventListener("click", async () => {
+    if (actionPending) return;
+    actionPending = true; renderControls(); advance.disabled = true;
+    let advanced = false;
+    try {
+      const data = await requestJson("/api/turn/advance", {});
+      state = data.state; advanced = true; renderAll(); actionArea.replaceChildren();
+    } catch (error) { setResult("មិនអាចបន្តវេនបានទេ", error.message); }
+    finally { actionPending = false; if (!advanced) advance.disabled = false; renderControls(); }
+  });
+  return advance;
+}
+
+function renderPendingAdvance() {
+  if (!state || !state.pendingAdvance || actionArea.children.length) return;
+  const lastSpin = state.latestSpin;
+  const option = lastSpin && wheelOptions.find(item => item.id === lastSpin.outcomeId);
+  setResult("បញ្ចប់សកម្មភាពមុនបន្ត", option ? `${lastSpin.playerName}៖ ${option.title}` : "សូមបញ្ចប់សកម្មភាពរបស់អ្នកលេងបច្ចុប្បន្ន។");
+  actionArea.append(createAdvanceButton());
 }
 
 function audioAvailable() { return typeof window.AudioContext === "function" || typeof window.webkitAudioContext === "function"; }
@@ -411,9 +573,9 @@ async function ensureAudio() {
 function updateAudioLevels() {
   if (!audioContext || !masterGain) return;
   const now = audioContext.currentTime;
-  masterGain.gain.setTargetAtTime(Math.pow(settings.volume / 100, 1.35), now, 0.04);
-  effectsGain.gain.setTargetAtTime(settings.soundEffects ? 1 : 0, now, 0.025);
-  musicGain.gain.setTargetAtTime(settings.backgroundMusic ? 0.22 : 0, now, 0.18);
+  masterGain.gain.setTargetAtTime(settings.soundMuted ? 0 : Math.pow(settings.volume / 100, 1.35), now, 0.04);
+  effectsGain.gain.setTargetAtTime(settings.soundEffects && !settings.soundMuted ? 1 : 0, now, 0.025);
+  musicGain.gain.setTargetAtTime(settings.backgroundMusic && !settings.soundMuted && !gamePaused ? 0.22 : 0, now, 0.18);
   if (settings.backgroundMusic && !musicOscillators.length) startMusic();
   if (!settings.backgroundMusic && musicOscillators.length) stopMusic();
 }
@@ -427,7 +589,7 @@ function startMusic() {
 }
 function stopMusic() { for (const oscillator of musicOscillators) { try { oscillator.stop(); oscillator.disconnect(); } catch (_) {} } musicOscillators = []; }
 function tone(frequency, duration, type = "sine", peak = 0.12, endFrequency = frequency, delay = 0) {
-  if (!audioContext || !settings.soundEffects || settings.volume <= 0) return;
+  if (!audioContext || !settings.soundEffects || settings.soundMuted || settings.volume <= 0) return;
   const start = audioContext.currentTime + delay;
   const oscillator = audioContext.createOscillator(); const envelope = audioContext.createGain();
   oscillator.type = type; oscillator.frequency.setValueAtTime(Math.max(35, frequency), start);
@@ -438,7 +600,7 @@ function tone(frequency, duration, type = "sine", peak = 0.12, endFrequency = fr
   return oscillator;
 }
 async function startSpinAudio() {
-  if (!settings.soundEffects && !settings.backgroundMusic) return;
+  if (settings.soundMuted || (!settings.soundEffects && !settings.backgroundMusic)) return;
   if (!await ensureAudio()) return;
   if (settings.soundEffects) tone(520, 0.48, "sawtooth", 0.13, 78);
 }
@@ -454,7 +616,7 @@ function durationForSpin() {
 }
 function turnsForSpeed() { return ({ verySlow: 2, slow: 4, normal: 6, fast: 9, veryFast: 12 })[settings.spinSpeed] || 6; }
 function easedProgress(t) {
-  if (settings.animationStyle === "smooth") return 1 - Math.pow(1 - t, 4);
+  if (settings.animationStyle === "smooth") return t * t * t * (t * (t * 6 - 15) + 10);
   if (settings.animationStyle === "energetic") return 1 - Math.pow(1 - t, 5);
   if (settings.animationStyle === "bouncy") {
     const c1 = 1.70158; const c3 = c1 + 1;
@@ -472,52 +634,82 @@ function animateTo(outcomeId, availableIds) {
   const normalize = angle => ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   const current = normalize(start); let delta = normalize(target) - current; if (delta < 0) delta += Math.PI * 2;
   const extra = delta + turnsForSpeed() * Math.PI * 2;
-  const duration = durationForSpin(); const begin = performance.now(); spinning = true; renderControls(); lastTick = -1;
+  const duration = durationForSpin(); spinning = true; renderControls(); lastTick = -1;
   return new Promise(resolve => {
-    function frame(now) {
-      const t = Math.min(1, (now - begin) / duration); const eased = t === 1 ? 1 : easedProgress(t);
-      rotation = start + extra * eased; drawWheel(spinOptions);
-      const pointerAngle = normalize(-rotation); const segment = Math.floor(pointerAngle / arc);
-      if (segment !== lastTick) { lastTick = segment; playTick(Math.min(1500, 380 + Math.abs(extra * (1 - eased) / (duration / 1000)) * 95)); }
-      if (t < 1) requestAnimationFrame(frame);
-      else { rotation = normalize(start + extra); drawWheel(spinOptions); spinning = false; if (previousTickOscillator && audioContext) { try { previousTickOscillator.stop(audioContext.currentTime); } catch (_) {} } previousTickOscillator = null; resolve(); }
-    }
-    requestAnimationFrame(frame);
+    bottleAnimation = { start, extra, duration, elapsed: 0, lastFrame: performance.now(), arc, resolve };
+    queueBottleFrame();
   });
 }
+
+function queueBottleFrame() {
+  if (bottleFrame || !bottleAnimation || gamePaused || document.hidden) return;
+  bottleFrame = requestAnimationFrame(animateBottleFrame);
+}
+
+function animateBottleFrame(now) {
+  bottleFrame = 0;
+  const animation = bottleAnimation;
+  if (!animation || gamePaused || document.hidden) return;
+  animation.elapsed += Math.max(0, now - animation.lastFrame);
+  animation.lastFrame = now;
+  const t = Math.min(1, animation.elapsed / animation.duration);
+  const eased = t === 1 ? 1 : easedProgress(t);
+  rotation = animation.start + animation.extra * eased;
+  updateBottlePose();
+  const pointerAngle = ((-rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  const segment = Math.floor(pointerAngle / animation.arc);
+  if (segment !== lastTick) {
+    lastTick = segment;
+    playTick(Math.min(1500, 380 + Math.abs(animation.extra * (1 - eased) / (animation.duration / 1000)) * 95));
+  }
+  if (t < 1) {
+    queueBottleFrame();
+    return;
+  }
+  rotation = ((animation.start + animation.extra) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  updateBottlePose();
+  bottleAnimation = null;
+  spinning = false;
+  if (previousTickOscillator && audioContext) { try { previousTickOscillator.stop(audioContext.currentTime); } catch (_) {} }
+  previousTickOscillator = null;
+  renderControls();
+  animation.resolve();
+}
+
 async function spin() {
-  if (spinning || actionPending || !state || !state.turnPlayerId || !wheelOptions.length) return;
-  spinButton.disabled = true; spinButton.textContent = "✨ កំពុងរៀបចំ...";
-  await startSpinAudio();
+  if (spinning || actionPending || gamePaused || !state || !state.turnPlayerId || !wheelOptions.length) return;
+  actionPending = true; renderControls();
   try {
+    await startSpinAudio();
     const wheelOptionIds = wheelOptions.map(option => option.id);
     const payload = await requestJson("/api/spin", { playerId: state.turnPlayerId, wheelOptionIds });
+    actionPending = false; renderControls();
     await animateTo(payload.outcome.outcomeId, payload.availableOutcomeIds);
-    state = payload.state; renderAll(); showOutcome(payload);
+    state = payload.state; renderPlayers(); renderMoney(); renderControls(); showOutcome(payload);
   } catch (error) {
     if (error.data && error.data.state) state = error.data.state;
     renderAll(); setResult("មិនអាចបង្វិលបានទេ", error.message);
-  } finally { spinButton.textContent = "🎯 បង្វិលកង់"; renderControls(); }
+  } finally { actionPending = false; renderControls(); }
 }
 
 function resizeStarfield() {
   const canvas = document.getElementById("starfield"); if (!canvas) return;
-  const ratio = Math.min(window.devicePixelRatio || 1, 1.25);
+  const ratio = Math.min(window.devicePixelRatio || 1, 1.1);
   canvas.width = Math.max(1, Math.round(window.innerWidth * ratio)); canvas.height = Math.max(1, Math.round(window.innerHeight * ratio));
   canvas.style.width = `${window.innerWidth}px`; canvas.style.height = `${window.innerHeight}px`;
-  const count = window.innerWidth < 600 ? 1200 : 2000;
+  const count = window.innerWidth < 600 ? 300 : 620;
   stars = Array.from({ length: count }, () => ({
     x: Math.random() * canvas.width, y: Math.random() * canvas.height,
     size: (Math.random() * 1.45 + 0.35) * ratio, phase: Math.random() * Math.PI * 2,
     opacity: Math.random() * 0.45 + 0.18, rate: Math.random() * 0.0016 + 0.00025,
     gold: Math.random() < 0.16
   }));
-  const galaxyContext = canvas.getContext("2d", { alpha: true });
-  if (galaxyContext) galaxyContext.setTransform(1, 0, 0, 1, 0, 0);
+  starfieldContext = canvas.getContext("2d", { alpha: true });
+  if (starfieldContext) starfieldContext.setTransform(1, 0, 0, 1, 0, 0);
   drawStars(0, true);
 }
 function drawStars(time, still = false) {
-  const canvas = document.getElementById("starfield"); const galaxyContext = canvas && canvas.getContext("2d", { alpha: true });
+  const canvas = document.getElementById("starfield"); const galaxyContext = starfieldContext;
   if (!galaxyContext || !settings.galaxyParticles) return;
   galaxyContext.clearRect(0, 0, canvas.width, canvas.height);
   const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -537,7 +729,7 @@ function drawStars(time, still = false) {
 function galaxyTick(time) {
   galaxyFrame = 0;
   if (!galaxyRunning || !settings.galaxyParticles || document.hidden) return;
-  if (time - lastGalaxyDraw >= 50) {
+  if (time - lastGalaxyDraw >= 33) {
     lastGalaxyDraw = time;
     if (!shootingStar && time >= nextShootingStarAt && !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
       shootingStar = { x: Math.random() * window.innerWidth * 0.6, y: Math.random() * window.innerHeight * 0.45, distance: 250 + Math.random() * 250, starts: time, ends: time + 950 };
@@ -549,7 +741,7 @@ function galaxyTick(time) {
 }
 function updateGalaxyLoop() {
   const canvas = document.getElementById("starfield");
-  if (!settings.galaxyParticles || document.hidden) {
+  if (!settings.galaxyParticles || document.hidden || gamePaused || !gameStarted) {
     galaxyRunning = false; if (galaxyFrame) cancelAnimationFrame(galaxyFrame); galaxyFrame = 0;
     if (canvas) { const galaxyContext = canvas.getContext("2d"); galaxyContext.clearRect(0, 0, canvas.width, canvas.height); }
     return;
@@ -558,49 +750,115 @@ function updateGalaxyLoop() {
   if (!galaxyRunning) { galaxyRunning = true; lastGalaxyDraw = 0; galaxyFrame = requestAnimationFrame(galaxyTick); }
 }
 
-document.getElementById("playerForm").addEventListener("submit", async event => {
-  event.preventDefault(); const input = document.getElementById("playerName"); const name = input.value.trim(); if (!name) return;
-  try { await requestJson("/api/players", { name }); input.value = ""; await refreshState(); }
-  catch (error) { setResult("មិនអាចបន្ថែមបាន", error.message); }
-});
-document.getElementById("spin").addEventListener("click", spin);
-document.getElementById("luckyMoney").addEventListener("click", spin);
-document.getElementById("openSettings").addEventListener("click", openSettings);
-document.getElementById("closeSettings").addEventListener("click", closeSettings);
-document.getElementById("playersShortcut").addEventListener("click", () => { document.getElementById("playersSection").scrollIntoView({ behavior: "smooth", block: "start" }); document.getElementById("playerName").focus(); });
-document.getElementById("closeResult").addEventListener("click", dismissResult);
-document.getElementById("addOptionForm").addEventListener("submit", addOption);
-document.getElementById("saveWheelOptions").addEventListener("click", saveWheelOptions);
-document.getElementById("restoreWheelDefaults").addEventListener("click", restoreWheelOptions);
-document.getElementById("resetAllSettings").addEventListener("click", resetEverything);
-settingsBackdrop.addEventListener("click", event => { if (event.target === settingsBackdrop) closeSettings(); });
-resultBackdrop.addEventListener("click", event => { if (event.target === resultBackdrop) dismissResult(); });
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") {
-    if (!settingsBackdrop.hidden) closeSettings(); else if (!resultBackdrop.hidden) dismissResult();
-  }
-});
-for (const [id, key] of [["spinSpeed", "spinSpeed"], ["spinDuration", "spinDuration"], ["animationStyle", "animationStyle"]]) {
-  document.getElementById(id).addEventListener("change", event => { settings[key] = event.target.value; persistSettings(); setSettingsStatus("បានរក្សាទុកការកំណត់។"); });
-}
-for (const [id, key] of [["soundEffects", "soundEffects"], ["backgroundMusic", "backgroundMusic"], ["galaxyParticles", "galaxyParticles"], ["wheelGlow", "wheelGlow"]]) {
-  document.getElementById(id).addEventListener("change", async event => {
-    settings[key] = event.target.checked;
-    if (key === "backgroundMusic" && settings.backgroundMusic) await ensureAudio();
-    persistSettings(); setSettingsStatus("បានរក្សាទុកការកំណត់។");
-  });
-}
-document.getElementById("masterVolume").addEventListener("input", event => {
-  settings.volume = Number(event.target.value); document.getElementById("volumeValue").value = `${settings.volume}%`;
-  persistSettings();
-});
-for (const button of [spinButton, luckyMoneyBtn]) {
-  button.addEventListener("pointerdown", () => button.classList.add("pressed"));
-  button.addEventListener("pointerup", () => button.classList.remove("pressed"));
-  button.addEventListener("pointercancel", () => button.classList.remove("pressed"));
-}
-document.addEventListener("visibilitychange", () => { if (document.hidden) { galaxyRunning = false; if (galaxyFrame) cancelAnimationFrame(galaxyFrame); galaxyFrame = 0; } else updateGalaxyLoop(); });
-window.addEventListener("resize", resizeStarfield, { passive: true });
+let initialized = false;
+function initGame() {
+  if (initialized) return;
 
-persistSettings(); setSettingsInputs(); resizeStarfield(); updateGalaxyLoop(); drawWheel(visibleOptions()); updateOptionEditor(); refreshState();
-window.setInterval(() => { if (!spinning && !actionPending) refreshState(true); }, 5000);
+  const requiredElementIds = [
+    "actionArea", "addOptionForm", "animationStyle", "backgroundMusic", "cardDesc", "cardTitle",
+    "bottleSpin", "closeResult", "closeSettings", "galaxyParticles", "luckyMoney", "masterVolume", "newOptionColor",
+    "newOptionEmoji", "newOptionName", "openSettings", "playerCount", "playerForm", "playerList",
+    "pauseGame", "playerName", "playersSection", "playersShortcut", "poolAmount", "restartGame", "resetAllSettings", "restoreWheelDefaults",
+    "resultBackdrop", "resultCard", "resultDesc", "resultTitle", "saveWheelOptions", "settingsBackdrop",
+    "settingsDialog", "settingsStatus", "soundEffects", "soundToggle", "spin", "spinDuration", "spinSpeed", "startGame", "volumeValue",
+    "wheel", "wheelGlow", "wheelItemsEditor"
+  ];
+  const missingElementIds = requiredElementIds.filter(id => !document.getElementById(id));
+  if (!document.body || missingElementIds.length) {
+    console.error("[Spin-And-Drink] Initialization skipped; required page elements are missing.", missingElementIds);
+    return;
+  }
+
+  measureCanvas = document.createElement("canvas");
+  measureContext = measureCanvas.getContext("2d");
+  wheel = document.getElementById("wheel");
+  ctx = wheel.getContext("2d");
+  if (!measureContext || !ctx) {
+    console.error("[Spin-And-Drink] Initialization skipped; a 2D canvas context is unavailable.");
+    return;
+  }
+
+  spinButton = document.getElementById("spin");
+  luckyMoneyBtn = document.getElementById("luckyMoney");
+  resultTitle = document.getElementById("resultTitle");
+  resultDesc = document.getElementById("resultDesc");
+  actionArea = document.getElementById("actionArea");
+  resultBackdrop = document.getElementById("resultBackdrop");
+  resultCard = document.getElementById("resultCard");
+  cardTitle = document.getElementById("cardTitle");
+  cardDesc = document.getElementById("cardDesc");
+  closeResult = document.getElementById("closeResult");
+  settingsBackdrop = document.getElementById("settingsBackdrop");
+  settingsDialog = document.getElementById("settingsDialog");
+  settingsStatus = document.getElementById("settingsStatus");
+  bottleSpinner = document.getElementById("bottleSpin");
+  startButton = document.getElementById("startGame");
+  pauseButton = document.getElementById("pauseGame");
+  restartButton = document.getElementById("restartGame");
+  soundToggle = document.getElementById("soundToggle");
+  initialized = true;
+
+  document.getElementById("playerForm").addEventListener("submit", async event => {
+    event.preventDefault(); const input = document.getElementById("playerName"); const name = input.value.trim(); if (!name) return;
+    try { await requestJson("/api/players", { name }); input.value = ""; await refreshState(); }
+    catch (error) { setResult("មិនអាចបន្ថែមបាន", error.message); }
+  });
+  spinButton.addEventListener("click", spin);
+  luckyMoneyBtn.addEventListener("click", spin);
+  startButton.addEventListener("click", startGame);
+  pauseButton.addEventListener("click", pauseGame);
+  restartButton.addEventListener("click", restartGame);
+  soundToggle.addEventListener("click", toggleSound);
+  document.getElementById("openSettings").addEventListener("click", openSettings);
+  document.getElementById("closeSettings").addEventListener("click", closeSettings);
+  document.getElementById("playersShortcut").addEventListener("click", () => { document.getElementById("playersSection").scrollIntoView({ behavior: "smooth", block: "start" }); document.getElementById("playerName").focus(); });
+  closeResult.addEventListener("click", dismissResult);
+  document.getElementById("addOptionForm").addEventListener("submit", addOption);
+  document.getElementById("saveWheelOptions").addEventListener("click", saveWheelOptions);
+  document.getElementById("restoreWheelDefaults").addEventListener("click", restoreWheelOptions);
+  document.getElementById("resetAllSettings").addEventListener("click", resetEverything);
+  settingsBackdrop.addEventListener("click", event => { if (event.target === settingsBackdrop) closeSettings(); });
+  resultBackdrop.addEventListener("click", event => { if (event.target === resultBackdrop) dismissResult(); });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      if (!settingsBackdrop.hidden) closeSettings(); else if (!resultBackdrop.hidden) dismissResult();
+    }
+  });
+  for (const [id, key] of [["spinSpeed", "spinSpeed"], ["spinDuration", "spinDuration"], ["animationStyle", "animationStyle"]]) {
+    document.getElementById(id).addEventListener("change", event => { settings[key] = event.target.value; persistSettings(); setSettingsStatus("បានរក្សាទុកការកំណត់។"); });
+  }
+  for (const [id, key] of [["soundEffects", "soundEffects"], ["backgroundMusic", "backgroundMusic"], ["galaxyParticles", "galaxyParticles"], ["wheelGlow", "wheelGlow"]]) {
+    document.getElementById(id).addEventListener("change", async event => {
+      settings[key] = event.target.checked;
+      if (key === "backgroundMusic" && settings.backgroundMusic) await ensureAudio();
+      persistSettings(); setSettingsStatus("បានរក្សាទុកការកំណត់។");
+    });
+  }
+  document.getElementById("masterVolume").addEventListener("input", event => {
+    settings.volume = Number(event.target.value); document.getElementById("volumeValue").value = `${settings.volume}%`;
+    persistSettings();
+  });
+  for (const button of [spinButton, luckyMoneyBtn]) {
+    button.addEventListener("pointerdown", () => button.classList.add("pressed"));
+    button.addEventListener("pointerup", () => button.classList.remove("pressed"));
+    button.addEventListener("pointercancel", () => button.classList.remove("pressed"));
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (bottleFrame) cancelAnimationFrame(bottleFrame);
+      bottleFrame = 0;
+      if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
+      galaxyRunning = false; if (galaxyFrame) cancelAnimationFrame(galaxyFrame); galaxyFrame = 0;
+    } else {
+      if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
+      queueBottleFrame(); updateGalaxyLoop();
+    }
+  });
+  window.addEventListener("resize", resizeStarfield, { passive: true });
+
+  persistSettings(); setSettingsInputs(); updateBottlePose(); resizeStarfield(); updateGalaxyLoop(); drawWheel(visibleOptions()); updateOptionEditor(); renderControls(); refreshState();
+  window.setInterval(() => { if (!spinning && !actionPending) refreshState(true); }, 5000);
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initGame, { once: true });
+else initGame();
