@@ -88,8 +88,8 @@ let actionPending = false;
 let gameStarted = false;
 let gamePaused = false;
 let startPending = false;
-let bottleAnimation = null;
-let bottleFrame = 0;
+let wheelAnimation = null;
+let wheelFrame = 0;
 let stateRefreshPromise = null;
 let lastTick = -1;
 let galaxyFrame = 0;
@@ -123,7 +123,6 @@ let closeResult = null;
 let settingsBackdrop = null;
 let settingsDialog = null;
 let settingsStatus = null;
-let bottleSpinner = null;
 let startButton = null;
 let pauseButton = null;
 let restartButton = null;
@@ -213,6 +212,19 @@ function drawWheel(items = visibleOptions()) {
     ctx.restore();
   });
 
+  ctx.save();
+  ctx.shadowColor = "rgba(255, 208, 91, .9)";
+  ctx.shadowBlur = 9;
+  for (let index = 0; index < 48; index++) {
+    const angle = index * Math.PI * 2 / 48;
+    const bulbRadius = radius * 0.966;
+    ctx.beginPath();
+    ctx.arc(center + Math.cos(angle) * bulbRadius, center + Math.sin(angle) * bulbRadius, 5.2, 0, Math.PI * 2);
+    ctx.fillStyle = index % 3 === 0 ? "#fff8d1" : "#ffd773";
+    ctx.fill();
+  }
+  ctx.restore();
+
   const hub = ctx.createRadialGradient(center * .82, center * .76, radius * .02, center, center, radius * .3);
   hub.addColorStop(0, "#fff8db"); hub.addColorStop(.45, "#d9b66b"); hub.addColorStop(1, "#68431f");
   ctx.beginPath(); ctx.arc(center, center, radius * 0.29, 0, Math.PI * 2); ctx.fillStyle = hub; ctx.fill();
@@ -220,7 +232,7 @@ function drawWheel(items = visibleOptions()) {
   ctx.strokeStyle = "rgba(255,220,130,.98)"; ctx.lineWidth = 18; ctx.stroke();
   ctx.beginPath(); ctx.arc(center, center, radius * 0.97, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(255,249,221,.6)"; ctx.lineWidth = 5; ctx.stroke();
-  updateBottlePose();
+  updateWheelPose();
 }
 
 function graphemeList(text) {
@@ -368,10 +380,9 @@ function renderAll() {
   renderPendingAdvance();
 }
 
-function updateBottlePose() {
-  if (!bottleSpinner) return;
-  const angle = 270 - rotation * 180 / Math.PI;
-  bottleSpinner.style.transform = `rotate(${angle}deg)`;
+function updateWheelPose() {
+  if (!wheel) return;
+  wheel.style.setProperty("--wheel-rotation", rotation + "rad");
 }
 
 function updateSoundControl() {
@@ -383,8 +394,8 @@ function updateSoundControl() {
 async function startGame() {
   if (gameStarted && gamePaused) {
     gamePaused = false;
-    if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
-    updateAudioLevels(); queueBottleFrame(); updateGalaxyLoop(); renderControls();
+    if (wheelAnimation) wheelAnimation.lastFrame = performance.now();
+    updateAudioLevels(); queueWheelFrame(); updateGalaxyLoop(); renderControls();
     setResult("បានបន្តលេង", state && state.turnPlayerName ? `វេនរបស់ ${state.turnPlayerName}` : "បន្ថែមឈ្មោះអ្នកលេងដើម្បីចាប់ផ្ដើម។");
     return;
   }
@@ -395,8 +406,8 @@ async function startGame() {
     if (!state) return;
     gameStarted = true; gamePaused = false;
     updateGalaxyLoop();
-    if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
-    queueBottleFrame();
+    if (wheelAnimation) wheelAnimation.lastFrame = performance.now();
+    queueWheelFrame();
     if (!state.players.length) {
       setResult("បន្ថែមអ្នកលេងដើម្បីចាប់ផ្ដើម", "បញ្ចូលឈ្មោះអ្នកលេងនៅខាងលើ រួចចុចបង្វិលកង់។");
       document.getElementById("playerName").focus();
@@ -409,19 +420,19 @@ async function startGame() {
 function pauseGame() {
   if (!gameStarted || gamePaused) return;
   gamePaused = true;
-  if (bottleFrame) cancelAnimationFrame(bottleFrame);
-  bottleFrame = 0;
+  if (wheelFrame) cancelAnimationFrame(wheelFrame);
+  wheelFrame = 0;
   if (musicGain && audioContext) musicGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.06);
   updateGalaxyLoop(); renderControls();
-  setResult("ហ្គេមបានផ្អាក", "ចុចបន្តដើម្បីបន្តចលនាដប និងការលេង។");
+  setResult("ហ្គេមបានផ្អាក", "ចុចបន្តដើម្បីបន្តចលនាកង់ និងការលេង។");
 }
 
 async function restartGame() {
   if (!state || spinning || actionPending || startPending) return;
   gameStarted = false; gamePaused = false;
-  if (bottleFrame) cancelAnimationFrame(bottleFrame);
-  bottleFrame = 0; bottleAnimation = null; rotation = 0;
-  updateBottlePose(); actionArea.replaceChildren(); dismissResult();
+  if (wheelFrame) cancelAnimationFrame(wheelFrame);
+  wheelFrame = 0; wheelAnimation = null; rotation = 0;
+  updateWheelPose(); actionArea.replaceChildren(); dismissResult();
   setResult("ត្រៀមខ្លួនហើយឬ?", "ចុចចាប់ផ្ដើម រួចបង្វិលកង់ដើម្បីលេង។ អ្នកលេង និងច្បាប់នៅដដែល។");
   updateGalaxyLoop(); renderControls();
   await refreshState();
@@ -636,26 +647,26 @@ function animateTo(outcomeId, availableIds) {
   const extra = delta + turnsForSpeed() * Math.PI * 2;
   const duration = durationForSpin(); spinning = true; renderControls(); lastTick = -1;
   return new Promise(resolve => {
-    bottleAnimation = { start, extra, duration, elapsed: 0, lastFrame: performance.now(), arc, resolve };
-    queueBottleFrame();
+    wheelAnimation = { start, extra, duration, elapsed: 0, lastFrame: performance.now(), arc, resolve };
+    queueWheelFrame();
   });
 }
 
-function queueBottleFrame() {
-  if (bottleFrame || !bottleAnimation || gamePaused || document.hidden) return;
-  bottleFrame = requestAnimationFrame(animateBottleFrame);
+function queueWheelFrame() {
+  if (wheelFrame || !wheelAnimation || gamePaused || document.hidden) return;
+  wheelFrame = requestAnimationFrame(animateWheelFrame);
 }
 
-function animateBottleFrame(now) {
-  bottleFrame = 0;
-  const animation = bottleAnimation;
+function animateWheelFrame(now) {
+  wheelFrame = 0;
+  const animation = wheelAnimation;
   if (!animation || gamePaused || document.hidden) return;
   animation.elapsed += Math.max(0, now - animation.lastFrame);
   animation.lastFrame = now;
   const t = Math.min(1, animation.elapsed / animation.duration);
   const eased = t === 1 ? 1 : easedProgress(t);
   rotation = animation.start + animation.extra * eased;
-  updateBottlePose();
+  updateWheelPose();
   const pointerAngle = ((-rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   const segment = Math.floor(pointerAngle / animation.arc);
   if (segment !== lastTick) {
@@ -663,12 +674,12 @@ function animateBottleFrame(now) {
     playTick(Math.min(1500, 380 + Math.abs(animation.extra * (1 - eased) / (animation.duration / 1000)) * 95));
   }
   if (t < 1) {
-    queueBottleFrame();
+    queueWheelFrame();
     return;
   }
   rotation = ((animation.start + animation.extra) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-  updateBottlePose();
-  bottleAnimation = null;
+  updateWheelPose();
+  wheelAnimation = null;
   spinning = false;
   if (previousTickOscillator && audioContext) { try { previousTickOscillator.stop(audioContext.currentTime); } catch (_) {} }
   previousTickOscillator = null;
@@ -756,7 +767,7 @@ function initGame() {
 
   const requiredElementIds = [
     "actionArea", "addOptionForm", "animationStyle", "backgroundMusic", "cardDesc", "cardTitle",
-    "bottleSpin", "closeResult", "closeSettings", "galaxyParticles", "luckyMoney", "masterVolume", "newOptionColor",
+    "closeResult", "closeSettings", "galaxyParticles", "luckyMoney", "masterVolume", "newOptionColor",
     "newOptionEmoji", "newOptionName", "openSettings", "playerCount", "playerForm", "playerList",
     "pauseGame", "playerName", "playersSection", "playersShortcut", "poolAmount", "restartGame", "resetAllSettings", "restoreWheelDefaults",
     "resultBackdrop", "resultCard", "resultDesc", "resultTitle", "saveWheelOptions", "settingsBackdrop",
@@ -791,7 +802,6 @@ function initGame() {
   settingsBackdrop = document.getElementById("settingsBackdrop");
   settingsDialog = document.getElementById("settingsDialog");
   settingsStatus = document.getElementById("settingsStatus");
-  bottleSpinner = document.getElementById("bottleSpin");
   startButton = document.getElementById("startGame");
   pauseButton = document.getElementById("pauseGame");
   restartButton = document.getElementById("restartGame");
@@ -845,18 +855,18 @@ function initGame() {
   }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      if (bottleFrame) cancelAnimationFrame(bottleFrame);
-      bottleFrame = 0;
-      if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
+      if (wheelFrame) cancelAnimationFrame(wheelFrame);
+      wheelFrame = 0;
+      if (wheelAnimation) wheelAnimation.lastFrame = performance.now();
       galaxyRunning = false; if (galaxyFrame) cancelAnimationFrame(galaxyFrame); galaxyFrame = 0;
     } else {
-      if (bottleAnimation) bottleAnimation.lastFrame = performance.now();
-      queueBottleFrame(); updateGalaxyLoop();
+      if (wheelAnimation) wheelAnimation.lastFrame = performance.now();
+      queueWheelFrame(); updateGalaxyLoop();
     }
   });
   window.addEventListener("resize", resizeStarfield, { passive: true });
 
-  persistSettings(); setSettingsInputs(); updateBottlePose(); resizeStarfield(); updateGalaxyLoop(); drawWheel(visibleOptions()); updateOptionEditor(); renderControls(); refreshState();
+  persistSettings(); setSettingsInputs(); updateWheelPose(); resizeStarfield(); updateGalaxyLoop(); drawWheel(visibleOptions()); updateOptionEditor(); renderControls(); refreshState();
   window.setInterval(() => { if (!spinning && !actionPending) refreshState(true); }, 5000);
 }
 
