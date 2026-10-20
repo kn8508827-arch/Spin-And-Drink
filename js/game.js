@@ -130,6 +130,17 @@ let pauseButton = null;
 let restartButton = null;
 let soundToggle = null;
 let starfieldContext = null;
+let celebrationCanvas = null;
+let celebrationContext = null;
+let celebrationFrame = 0;
+let celebrationStartedAt = 0;
+let celebrationLastFrame = 0;
+let celebrationBurstIndex = 0;
+let celebrationWidth = 0;
+let celebrationHeight = 0;
+let celebrationParticles = [];
+let celebrationNoiseBuffer = null;
+let celebrationSources = [];
 
 function visibleOptions() {
   return wheelOptions.filter(option => option.id !== "money" || Number(state && state.poolRiel || 0) > 0);
@@ -533,8 +544,10 @@ function resetEverything() { wheelOptions = cloneDefaults(); settings = { ...DEF
 function openResult(title, description) {
   cardTitle.textContent = title; cardDesc.textContent = description || "";
   resultBackdrop.hidden = false; document.body.classList.add("dialog-open"); closeResult.focus();
+  startCelebration();
 }
 function dismissResult() {
+  stopCelebration();
   resultBackdrop.hidden = true; document.body.classList.remove("dialog-open");
   if (state && !spinning) { rotation = 0; drawWheel(visibleOptions()); }
 }
@@ -557,6 +570,122 @@ function showOutcome(payload) {
   if (option.id === "command") {
     actionArea.append(createAdvanceButton());
   }
+}
+
+function resizeCelebrationCanvas() {
+  if (!celebrationCanvas || !resultCard || !resultBackdrop || resultBackdrop.hidden) return;
+  const bounds = resultCard.getBoundingClientRect();
+  celebrationWidth = Math.max(1, bounds.width);
+  celebrationHeight = Math.max(1, bounds.height);
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
+  celebrationCanvas.width = Math.round(celebrationWidth * pixelRatio);
+  celebrationCanvas.height = Math.round(celebrationHeight * pixelRatio);
+  celebrationContext = celebrationCanvas.getContext("2d", { alpha: true });
+  if (celebrationContext) celebrationContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+}
+
+function launchFirework(xRatio, yRatio, color) {
+  if (!celebrationContext) return;
+  const originX = celebrationWidth * xRatio;
+  const originY = celebrationHeight * yRatio;
+  const count = window.innerWidth < 600 ? 25 : 38;
+  for (let index = 0; index < count; index++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 48 + Math.random() * Math.min(150, celebrationWidth * 0.38);
+    celebrationParticles.push({
+      x: originX, y: originY, previousX: originX, previousY: originY,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      size: 1.1 + Math.random() * 2.5, life: .9 + Math.random() * .8,
+      age: 0, color, twinkle: .72 + Math.random() * .28
+    });
+  }
+}
+
+function animateCelebration(now) {
+  celebrationFrame = 0;
+  if (!resultBackdrop || resultBackdrop.hidden || !celebrationContext) return;
+  const elapsed = now - celebrationStartedAt;
+  const burstTimes = [0, 280, 640, 1020];
+  const burstPoints = [[.5, .32], [.2, .38], [.8, .36], [.5, .2]];
+  const burstColors = ["#ffe28a", "#53d9ff", "#ff79d2", "#fff8d1"];
+  while (celebrationBurstIndex < burstTimes.length && elapsed >= burstTimes[celebrationBurstIndex]) {
+    const [x, y] = burstPoints[celebrationBurstIndex];
+    launchFirework(x, y, burstColors[celebrationBurstIndex]);
+    celebrationBurstIndex++;
+  }
+
+  const delta = Math.min(.034, Math.max(.001, (now - (celebrationLastFrame || now - 16)) / 1000));
+  celebrationLastFrame = now;
+  celebrationContext.clearRect(0, 0, celebrationWidth, celebrationHeight);
+  celebrationContext.save();
+  celebrationContext.globalCompositeOperation = "lighter";
+  celebrationParticles = celebrationParticles.filter(particle => {
+    particle.previousX = particle.x;
+    particle.previousY = particle.y;
+    particle.age += delta;
+    particle.vx *= Math.pow(.986, delta * 60);
+    particle.vy = particle.vy * Math.pow(.986, delta * 60) + 72 * delta;
+    particle.x += particle.vx * delta;
+    particle.y += particle.vy * delta;
+    if (particle.age >= particle.life) return false;
+    const fade = Math.pow(1 - particle.age / particle.life, 1.35) * particle.twinkle;
+    celebrationContext.globalAlpha = fade;
+    celebrationContext.strokeStyle = particle.color;
+    celebrationContext.fillStyle = "#fffbe8";
+    celebrationContext.shadowColor = particle.color;
+    celebrationContext.shadowBlur = 8;
+    celebrationContext.lineWidth = particle.size;
+    celebrationContext.beginPath();
+    celebrationContext.moveTo(particle.previousX, particle.previousY);
+    celebrationContext.lineTo(particle.x, particle.y);
+    celebrationContext.stroke();
+    celebrationContext.globalAlpha = fade * .7;
+    celebrationContext.beginPath();
+    celebrationContext.arc(particle.x, particle.y, Math.max(.6, particle.size * .52), 0, Math.PI * 2);
+    celebrationContext.fill();
+    return true;
+  });
+  celebrationContext.restore();
+  if (elapsed < 3300 || celebrationParticles.length) celebrationFrame = requestAnimationFrame(animateCelebration);
+}
+
+function startCelebration() {
+  stopCelebration();
+  if (!celebrationCanvas || !resultBackdrop) return;
+  resultBackdrop.classList.add("celebration-active");
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reducedMotion) {
+    celebrationCanvas.hidden = true;
+    resultBackdrop.classList.add("celebration-reduced");
+    void playCelebrationSound();
+    return;
+  }
+  celebrationCanvas.hidden = false;
+  resizeCelebrationCanvas();
+  celebrationParticles = [];
+  celebrationStartedAt = performance.now();
+  celebrationLastFrame = celebrationStartedAt;
+  celebrationBurstIndex = 0;
+  celebrationFrame = requestAnimationFrame(animateCelebration);
+  void playCelebrationSound();
+}
+
+function stopCelebration() {
+  if (celebrationFrame) cancelAnimationFrame(celebrationFrame);
+  celebrationFrame = 0;
+  celebrationParticles = [];
+  if (celebrationContext && celebrationCanvas) celebrationContext.clearRect(0, 0, celebrationCanvas.width, celebrationCanvas.height);
+  if (resultBackdrop) resultBackdrop.classList.remove("celebration-active", "celebration-reduced");
+  for (const source of celebrationSources) { try { source.stop(); } catch (_) {} }
+  celebrationSources = [];
+}
+
+function trackCelebrationSource(source) {
+  if (!source) return;
+  celebrationSources.push(source);
+  source.addEventListener("ended", () => {
+    celebrationSources = celebrationSources.filter(activeSource => activeSource !== source);
+  }, { once: true });
 }
 
 function createAdvanceButton() {
@@ -635,7 +764,78 @@ function playTick(frequency = 700) {
   if (previousTickOscillator && audioContext) { try { previousTickOscillator.stop(audioContext.currentTime); } catch (_) {} }
   previousTickOscillator = tone(frequency, 0.045, "triangle", 0.09, frequency * 0.72);
 }
-function playWinSound() { [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => tone(frequency, 0.24, "sine", 0.16, frequency * 1.02, index * 0.1)); }
+function playWinSound() {
+  return [523.25, 659.25, 783.99, 1046.5].map((frequency, index) => tone(frequency, 0.24, "sine", 0.16, frequency * 1.02, index * 0.1));
+}
+function getCelebrationNoiseBuffer() {
+  if (celebrationNoiseBuffer || !audioContext) return celebrationNoiseBuffer;
+  const sampleRate = audioContext.sampleRate;
+  const duration = 3;
+  celebrationNoiseBuffer = audioContext.createBuffer(1, Math.ceil(sampleRate * duration), sampleRate);
+  const samples = celebrationNoiseBuffer.getChannelData(0);
+  let softened = 0;
+  for (let index = 0; index < samples.length; index++) {
+    const white = Math.random() * 2 - 1;
+    softened = softened * .94 + white * .06;
+    samples[index] = white * .62 + softened * .62;
+  }
+  return celebrationNoiseBuffer;
+}
+function scheduleCrowdLayer(start, frequency, peak, pan = 0) {
+  const buffer = getCelebrationNoiseBuffer();
+  if (!buffer || !audioContext || !effectsGain) return;
+  const source = audioContext.createBufferSource(); source.buffer = buffer;
+  source.playbackRate.value = .94 + Math.random() * .12;
+  const formant = audioContext.createBiquadFilter(); formant.type = "bandpass"; formant.Q.value = .82;
+  formant.frequency.setValueAtTime(frequency, start);
+  formant.frequency.linearRampToValueAtTime(frequency * 1.2, start + 1.05);
+  formant.frequency.linearRampToValueAtTime(frequency * .9, start + 2.65);
+  const envelope = audioContext.createGain();
+  envelope.gain.setValueAtTime(.0001, start);
+  envelope.gain.linearRampToValueAtTime(peak, start + .16);
+  envelope.gain.setValueAtTime(peak * .82, start + .72);
+  envelope.gain.linearRampToValueAtTime(peak * 1.04, start + 1.3);
+  envelope.gain.exponentialRampToValueAtTime(.0001, start + 2.68);
+  source.connect(formant).connect(envelope);
+  if (typeof audioContext.createStereoPanner === "function") {
+    const stereo = audioContext.createStereoPanner(); stereo.pan.value = pan;
+    envelope.connect(stereo).connect(effectsGain);
+  } else envelope.connect(effectsGain);
+  source.start(start, Math.random() * .2, 2.7); source.stop(start + 2.72);
+  trackCelebrationSource(source);
+}
+function scheduleNoiseBurst(start, duration, filterType, frequency, peak, frequencyEnd = frequency) {
+  const buffer = getCelebrationNoiseBuffer();
+  if (!buffer || !audioContext || !effectsGain) return;
+  const source = audioContext.createBufferSource(); source.buffer = buffer;
+  const filter = audioContext.createBiquadFilter(); filter.type = filterType;
+  filter.Q.value = filterType === "highpass" ? .7 : .9;
+  filter.frequency.setValueAtTime(frequency, start);
+  if (frequencyEnd !== frequency) filter.frequency.exponentialRampToValueAtTime(frequencyEnd, start + duration);
+  const envelope = audioContext.createGain();
+  envelope.gain.setValueAtTime(.0001, start);
+  envelope.gain.exponentialRampToValueAtTime(peak, start + Math.min(.008, duration / 3));
+  envelope.gain.exponentialRampToValueAtTime(.0001, start + duration);
+  source.connect(filter).connect(envelope).connect(effectsGain);
+  source.start(start, Math.random() * Math.max(.05, buffer.duration - duration), duration);
+  source.stop(start + duration + .02);
+  trackCelebrationSource(source);
+}
+async function playCelebrationSound() {
+  if (settings.soundMuted || !settings.soundEffects || settings.volume <= 0 || !await ensureAudio()) return;
+  playWinSound().forEach(trackCelebrationSource);
+  const now = audioContext.currentTime;
+  scheduleCrowdLayer(now, 410, .11, -.38);
+  scheduleCrowdLayer(now + .08, 780, .085, .36);
+  scheduleCrowdLayer(now + .18, 1480, .048, 0);
+  [0, .32, .7, 1.08, 1.48].forEach((offset, index) => {
+    scheduleNoiseBurst(now + offset, .23, "lowpass", 1250, index === 0 ? .12 : .095, 150);
+  });
+  for (let index = 0; index < 20; index++) {
+    const at = now + .12 + index * .103 + Math.random() * .055;
+    scheduleNoiseBurst(at, .052, "highpass", 1450 + Math.random() * 900, .082);
+  }
+}
 
 function durationForSpin() {
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return Math.min(900, Number(settings.spinDuration) * 1000);
@@ -782,7 +982,7 @@ function initGame() {
   if (initialized) return;
 
   const requiredElementIds = [
-    "actionArea", "addOptionForm", "animationStyle", "backgroundMusic", "cardDesc", "cardTitle",
+    "actionArea", "addOptionForm", "animationStyle", "backgroundMusic", "cardDesc", "cardTitle", "celebrationCanvas",
     "closeResult", "closeSettings", "galaxyParticles", "luckyMoney", "masterVolume", "newOptionColor",
     "newOptionEmoji", "newOptionName", "openSettings", "playerCount", "playerForm", "playerList",
     "pauseGame", "playerName", "playersSection", "playersShortcut", "poolAmount", "restartGame", "resetAllSettings", "restoreWheelDefaults",
@@ -812,6 +1012,7 @@ function initGame() {
   actionArea = document.getElementById("actionArea");
   resultBackdrop = document.getElementById("resultBackdrop");
   resultCard = document.getElementById("resultCard");
+  celebrationCanvas = document.getElementById("celebrationCanvas");
   cardTitle = document.getElementById("cardTitle");
   cardDesc = document.getElementById("cardDesc");
   closeResult = document.getElementById("closeResult");
@@ -871,6 +1072,7 @@ function initGame() {
   }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
+      stopCelebration();
       if (wheelFrame) cancelAnimationFrame(wheelFrame);
       wheelFrame = 0;
       if (wheelAnimation) wheelAnimation.lastFrame = performance.now();
@@ -881,6 +1083,7 @@ function initGame() {
     }
   });
   window.addEventListener("resize", resizeStarfield, { passive: true });
+  window.addEventListener("resize", resizeCelebrationCanvas, { passive: true });
 
   persistSettings(); setSettingsInputs(); updateWheelPose(); resizeStarfield(); updateGalaxyLoop(); drawWheel(visibleOptions()); updateOptionEditor(); renderControls(); refreshState();
   window.setInterval(() => { if (!spinning && !actionPending) refreshState(true); }, 5000);
