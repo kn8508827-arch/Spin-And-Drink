@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#08152d">
-  <title>Galaxy Spin &amp; Drink · Team ស្មោះស្នេហ៍</title>
+  <title>កង់សំណាង · Team ស្មោះស្នេហ៍</title>
   <link rel="icon" href="/Team_Smaoh_Sneha_Logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/premium-ui.css">
 </head>
@@ -21,7 +21,7 @@
   <div class="wrap">
     <header class="header">
       <div class="logo"><img src="/assets/team-emblem.png?v=2" alt="Team ស្មោះស្នេហ៍"></div>
-      <div class="title"><h1>បង្វិលផឹក🍻🎉😝😂</h1><p>បង្វិលសប្បាយ ជាមួយមិត្តភក្តិ</p></div>
+      <div class="title"><h1>បង្វិលកង់សំណាង💙🎉😄</h1><p>បង្វិលសប្បាយ ជាមួយមិត្តភក្តិ</p></div>
     </header>
 
     <main class="panel">
@@ -47,67 +47,31 @@
           <div class="table-rim" aria-hidden="true"></div>
           <div class="table-surface" aria-hidden="true"></div>
           <canvas id="wheel" width="900" height="900" role="img" aria-label="កង់សំណាង"></canvas>
-          <div class="bottle-view" aria-hidden="true">
-            <div class="bottle-plane">
-              <svg id="bottleSpin" class="bottle-spin" viewBox="0 0 560 132" focusable="false">
-                <defs>
-                  <linearGradient id="glassBody" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#b9e8bf" stop-opacity=".82"/>
-                    <stop offset=".18" stop-color="#307d55" stop-opacity=".93"/>
-                    <stop offset=".55" stop-color="#0e5139" stop-opacity=".96"/>
-                    <stop offset=".86" stop-color="#287a50" stop-opacity=".94"/>
-                    <stop offset="1" stop-color="#9bd7a5" stop-opacity=".8"/>
-                  </linearGradient>
-                  <linearGradient id="glassEdge" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0" stop-color="#e0f6dc" stop-opacity=".95"/>
-                    <stop offset=".09" stop-color="#7cbf8b" stop-opacity=".38"/>
-                    <stop offset=".48" stop-color="#081f17" stop-opacity=".14"/>
-                    <stop offset=".82" stop-color="#c4efca" stop-opacity=".48"/>
-                    <stop offset="1" stop-color="#f1ffe9" stop-opacity=".9"/>
-                  </linearGradient>
-                  <linearGradient id="foil" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#fff1b0"/>
-                    <stop offset=".28" stop-color="#c8872a"/>
-                    <stop offset=".5" stop-color="#fff0a1"/>
-                    <stop offset=".78" stop-color="#a45c18"/>
-                    <stop offset="1" stop-color="#f5d178"/>
-                  </linearGradient>
-                  <linearGradient id="label" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#f9e7bc"/>
-                    <stop offset="1" stop-color="#bd8b47"/>
-                  </linearGradient>
-                  <filter id="bottleShadow" x="-30%" y="-80%" width="160%" height="280%">
-                    <feGaussianBlur stdDeviation="6"/>
-                  </filter>
-                </defs>
-                <ellipse cx="278" cy="112" rx="238" ry="11" fill="#020b08" opacity=".62" filter="url(#bottleShadow)"/>
-                <path d="M31 43 Q31 31 46 27 L291 27 Q316 27 335 38 L372 49 L433 49 L433 83 L372 83 L335 94 Q316 105 291 105 L46 105 Q31 101 31 89 Z" fill="url(#glassBody)" stroke="#d7f4d6" stroke-opacity=".74" stroke-width="3"/>
-                <path d="M39 43 Q39 34 51 33 L286 33 Q314 33 330 44 L365 54 L419 54 L419 78 L365 78 L330 88 Q314 99 286 99 L51 99 Q39 98 39 88 Z" fill="url(#glassEdge)" opacity=".72"/>
-                <path d="M54 39 Q170 32 276 39" fill="none" stroke="#e9ffe7" stroke-opacity=".74" stroke-width="5" stroke-linecap="round"/>
-                <path d="M64 91 Q184 99 286 91" fill="none" stroke="#071c12" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>
-                <path d="M304 33 Q322 37 340 48 L370 56 L370 76 L340 84 Q322 95 304 99" fill="none" stroke="#d2f7d2" stroke-opacity=".42" stroke-width="3"/>
-                <rect x="128" y="43" width="132" height="46" rx="12" fill="url(#label)" stroke="#ffefc6" stroke-width="2"/>
-                <path d="M140 50 H248 M140 82 H248" stroke="#755020" stroke-opacity=".62" stroke-width="2"/>
-                <circle cx="194" cy="66" r="13" fill="#123d2b" stroke="#f4d993" stroke-width="2"/>
-                <path d="M194 57 L197 64 L205 65 L199 70 L201 78 L194 74 L187 78 L189 70 L183 65 L191 64 Z" fill="#f9e7bc"/>
-                <rect x="373" y="47" width="11" height="38" rx="4" fill="url(#foil)" stroke="#fff0af" stroke-width="1.5"/>
-                <rect x="383" y="51" width="53" height="30" rx="7" fill="url(#glassBody)" stroke="#d7f4d6" stroke-width="2"/>
-                <path d="M390 54 H427" stroke="#efffe9" stroke-opacity=".72" stroke-width="3" stroke-linecap="round"/>
-                <rect x="433" y="53" width="40" height="26" rx="6" fill="url(#foil)" stroke="#ffe9a0" stroke-width="2"/>
-                <path d="M443 57 V75 M452 57 V75 M461 57 V75" stroke="#8b4f19" stroke-opacity=".7" stroke-width="2"/>
-                <path d="M474 57 Q503 57 514 61 L530 65 L530 67 L514 71 Q503 75 474 75 Z" fill="#e0bd77" stroke="#fff0b0" stroke-width="2"/>
-                <path d="M523 66 L536 66" stroke="#fff8df" stroke-width="3" stroke-linecap="round"/>
-                <path d="M45 45 Q41 65 45 86" fill="none" stroke="#f1ffe9" stroke-opacity=".88" stroke-width="4" stroke-linecap="round"/>
-              </svg>
-            </div>
-          </div>
-          <div class="center-cap" aria-hidden="true"><img src="/assets/team-emblem.png?v=2" alt="" width="84" height="84"></div>
+          <svg class="wheel-pointer" viewBox="0 0 84 110" aria-hidden="true">
+            <defs>
+              <linearGradient id="pointerGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#fff4b8"/>
+                <stop offset=".28" stop-color="#f3c34d"/>
+                <stop offset=".62" stop-color="#b87516"/>
+                <stop offset="1" stop-color="#ffeaa0"/>
+              </linearGradient>
+              <linearGradient id="pointerFace" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fff9dc"/>
+                <stop offset=".5" stop-color="#f3c94e"/>
+                <stop offset="1" stop-color="#c48221"/>
+              </linearGradient>
+            </defs>
+            <path d="M42 4C63 4 79 20 79 41L42 105 5 41C5 20 21 4 42 4Z" fill="url(#pointerGold)" stroke="#fff4be" stroke-width="3"/>
+            <path d="M42 13C58 13 70 25 70 40L42 88 14 40C14 25 26 13 42 13Z" fill="url(#pointerFace)" stroke="#9a5d13" stroke-width="2"/>
+            <circle cx="42" cy="31" r="9" fill="#fff7d5" stroke="#d39a31" stroke-width="3"/>
+          </svg>
+          <div class="wheel-hub" aria-hidden="true"><img src="/assets/team-emblem.png?v=2" alt="" width="84" height="84"></div>
         </div>
 
         <div class="session-controls" role="group" aria-label="ការគ្រប់គ្រងហ្គេម">
           <button id="startGame" class="control-button control-start" type="button">▶ ចាប់ផ្ដើម</button>
           <button id="pauseGame" class="control-button" type="button" disabled>Ⅱ ផ្អាក</button>
-          <button id="restartGame" class="control-button" type="button" title="កំណត់ទីតាំងដបឡើងវិញ ដោយរក្សាអ្នកលេង និងវេន">↻ ចាប់ផ្ដើមឡើងវិញ</button>
+          <button id="restartGame" class="control-button" type="button" title="កំណត់ទីតាំងកង់ឡើងវិញ ដោយរក្សាអ្នកលេង និងវេន">↻ ចាប់ផ្ដើមឡើងវិញ</button>
           <button id="soundToggle" class="control-button" type="button" aria-pressed="true" aria-label="បិទ ឬបើកសំឡេង">🔊 សំឡេង</button>
         </div>
 
