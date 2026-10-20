@@ -6,9 +6,9 @@ const DEFAULT_OPTIONS = [
   { id: "command", emoji: "👉", title: "បញ្ជាមិត្តម្នាក់", desc: "ជ្រើសមិត្តម្នាក់ឱ្យធ្វើកិច្ចការ។", color: "#66a8ff" },
   { id: "drink", emoji: "🍷", title: "ផឹក 1 កែវ", desc: "ផឹក 1 កែវ។", color: "#42a5f5" },
   { id: "truth", emoji: "❓", title: "ជីវិត" , desc: "ឆ្លើយសំណួរ/ធ្វើការបង្ហាញ។", color: "#ff7b72" },
-  { id: "luck", emoji: "🍀", title: "សំណាង ៤ ដង", desc: "ទទួលបានសន្លឹកសំណាង ៤ ដង។", color: "#188b75" },
+  { id: "luck", emoji: "🍺", title: "ផឹក 1 កែវ", desc: "ផឹក 1 កែវ។", color: "#188b75" },
   { id: "sing", emoji: "🎤", title: "ច្រៀងមួយបទ", desc: "ច្រៀងមួយបទ។", color: "#e28a3b" },
-  { id: "dance", emoji: "💃", title: "រាំ ៥ វិនាទី", desc: "រាំ ៥ វិនាទី។", color: "#cb5d78" },
+  { id: "dance", emoji: "💸", title: "អោយលុយគេ", desc: "លទ្ធផល៖ អោយលុយគេ។", color: "#cb5d78" },
   { id: "dance-two-minutes", emoji: "💃", title: "រាំ 2 នាទី", desc: "អ្នកត្រូវរាំ 2 នាទី! 💃🕺", color: "#765db2" },
   { id: "again", emoji: "🎁", title: "បង្វិលម្ដងទៀត", desc: "អ្នកអាចបង្វិលកង់ម្ដងទៀត។", color: "#536d9b" },
   { id: "money", emoji: "💰", title: "សំណាងបានលុយ", desc: "ឈ្នះប្រាក់រង្វាន់។", color: "#d89c16" }
@@ -49,11 +49,13 @@ function normalizeOptionList(value) {
     if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(id) || REMOVED_OPTION_IDS.has(id) || used.has(id) || !title) continue;
     used.add(id);
     const defaultOption = DEFAULT_OPTIONS.find(option => option.id === id);
+    const legacyDrinkLabel = id === "luck" && /^(?:សំណាង\s*(?:4|៤)\s*ដង|lucky\s*4\s*times)$/i.test(title);
+    const legacyMoneyLabel = id === "dance" && /^រាំ\s*(?:5|៥)\s*(?:នាទី|វិនាទី|min(?:ute)?s?)$/i.test(title);
     normalized.push({
       id,
-      emoji: typeof item.emoji === "string" ? Array.from(item.emoji.trim()).slice(0, 8).join("") : "✨",
-      title,
-      desc: typeof item.desc === "string" ? item.desc.slice(0, 160) : title,
+      emoji: legacyDrinkLabel ? "🍺" : legacyMoneyLabel ? "💸" : typeof item.emoji === "string" ? Array.from(item.emoji.trim()).slice(0, 8).join("") : "✨",
+      title: legacyDrinkLabel ? "ផឹក 1 កែវ" : legacyMoneyLabel ? "អោយលុយគេ" : title,
+      desc: legacyDrinkLabel ? "ផឹក 1 កែវ។" : legacyMoneyLabel ? "លទ្ធផល៖ អោយលុយគេ។" : typeof item.desc === "string" ? item.desc.slice(0, 160) : title,
       color: isColor(item.color) ? item.color : (defaultOption ? defaultOption.color : "#9b70e8")
     });
   }
@@ -189,19 +191,33 @@ function drawWheel(items = visibleOptions()) {
     ctx.font = `900 ${fontSize}px "Noto Sans Khmer","Khmer OS System",system-ui,sans-serif`;
 
     ctx.save();
+    ctx.lineJoin = "round";
     ctx.lineWidth = Math.max(6, fontSize * 0.32);
-    ctx.strokeStyle = "rgba(2,6,18,0.95)";
+    ctx.strokeStyle = "#652c16";
     ctx.shadowBlur = Math.max(6, fontSize * 0.32);
-    ctx.translate(Math.max(1, fontSize * 0.04), Math.max(1, fontSize * 0.06));
+    ctx.shadowColor = "rgba(13, 8, 19, .68)";
+    ctx.translate(Math.max(2, fontSize * 0.08), Math.max(3, fontSize * 0.15));
     lines.forEach((line, lineIndex) => {
       const y = (lineIndex - (lines.length - 1) / 2) * lineHeight;
       ctx.strokeText(line, labelRadius, y, width);
     });
     ctx.restore();
 
-    ctx.lineWidth = Math.max(4, fontSize * 0.24);
-    ctx.strokeStyle = "rgba(4,13,29,.85)";
+    ctx.save();
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.max(5, fontSize * 0.27);
+    ctx.strokeStyle = "#102651";
+    ctx.translate(Math.max(1, fontSize * 0.035), Math.max(1, fontSize * 0.055));
+    lines.forEach((line, lineIndex) => {
+      const y = (lineIndex - (lines.length - 1) / 2) * lineHeight;
+      ctx.strokeText(line, labelRadius, y, width);
+    });
+    ctx.restore();
+
+    ctx.lineWidth = Math.max(4, fontSize * 0.2);
+    ctx.strokeStyle = "rgba(76,36,18,.96)";
     ctx.shadowBlur = Math.max(4, fontSize * 0.28);
+    ctx.shadowColor = "rgba(0,0,0,.58)";
     ctx.fillStyle = "#fff9e8";
 
     lines.forEach((line, lineIndex) => {
