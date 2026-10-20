@@ -69,14 +69,27 @@ canvas#wheel{position:relative;z-index:1;width:100%;height:auto;border-radius:50
 @media(max-width:360px){.player-form{gap:6px}.player-form input{padding:10px;font-size:13px}.btn-add{padding:9px 11px}.settings-grid{grid-template-columns:1fr}.setting-field-wide{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
-/* A shallow-perspective tabletop keeps the existing outcome wheel readable. */
+/* Brand-first 3D wheel with a fixed gold pointer and the team emblem at its hub. */
 .wheel-stage {
   aspect-ratio: 1;
-  filter: drop-shadow(0 26px 32px rgba(0, 0, 0, .48));
-  perspective: 1200px;
+  transform-style: preserve-3d;
+  perspective: 1400px;
+  filter: drop-shadow(0 28px 34px rgba(2, 13, 34, .54));
 }
-.wheel-stage::before,
-.wheel-stage::after { display: none; }
+.wheel-stage::before { display: none; }
+.wheel-stage::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -2%;
+  height: 15%;
+  z-index: -2;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f4c95b, #a86817 42%, #163b73 46%, #071c40);
+  box-shadow: 0 17px 18px rgba(0, 0, 0, .36);
+  transform: rotateX(58deg) translateY(-8%);
+}
 .table-base,
 .table-rim,
 .table-surface {
@@ -85,120 +98,142 @@ canvas#wheel{position:relative;z-index:1;width:100%;height:auto;border-radius:50
   pointer-events: none;
 }
 .table-base {
-  inset: 2.8%;
-  transform: translateY(4.2%) rotateX(22deg);
-  background: linear-gradient(180deg, #684025, #30180f 72%, #170b08);
-  box-shadow: 0 28px 20px rgba(0, 0, 0, .58), 0 4px 0 #9a6a37;
+  inset: 2.2%;
+  transform: translateY(3.4%) rotateX(16deg);
+  background: linear-gradient(180deg, #377cb9, #174776 58%, #0a254d);
+  box-shadow: 0 22px 0 #754711, 0 34px 24px rgba(0, 0, 0, .58), inset 0 3px 7px rgba(255, 255, 255, .36);
 }
 .table-rim {
-  inset: 1.4%;
-  transform: rotateX(22deg);
-  background: conic-gradient(from 220deg, #68421e, #f1cf83 12%, #7d4d24 23%, #e8c27a 39%, #5b351d 55%, #f0d08c 73%, #7b4d26 88%, #d9ae68);
-  box-shadow: inset 0 2px 3px rgba(255, 250, 219, .8), inset 0 -8px 12px rgba(33, 15, 8, .62), 0 4px 9px rgba(0, 0, 0, .54);
+  inset: .7%;
+  transform: rotateX(16deg);
+  background: conic-gradient(from 220deg, #7d4a0d, #fff0a0 10%, #d99424 18%, #fff3b6 28%, #9e5c11 39%, #ffe88d 51%, #bd7719 64%, #fff2ad 77%, #925410 89%, #f9d66c);
+  box-shadow: inset 0 3px 5px rgba(255, 255, 255, .9), inset 0 -9px 11px rgba(81, 43, 6, .75), 0 8px 11px rgba(0, 0, 0, .46);
 }
 .table-surface {
-  inset: 3.6%;
-  transform: rotateX(22deg);
+  inset: 3.2%;
   overflow: hidden;
-  border: 8px solid rgba(56, 31, 17, .92);
+  transform: rotateX(16deg);
+  border: 7px solid rgba(103, 63, 14, .96);
   background:
-    radial-gradient(ellipse at 34% 26%, rgba(255, 229, 177, .45), transparent 44%),
-    repeating-linear-gradient(8deg, rgba(35, 17, 9, .14) 0 2px, transparent 2px 11px, rgba(243, 192, 120, .12) 11px 13px),
-    radial-gradient(ellipse at 50% 48%, #a96d3d, #714324 68%, #452817);
-  box-shadow: inset 0 3px 8px rgba(255, 235, 192, .42), inset 0 -13px 22px rgba(27, 13, 7, .6), 0 0 0 2px rgba(255, 226, 163, .55);
+    radial-gradient(ellipse at 34% 21%, rgba(255, 255, 255, .52), transparent 36%),
+    radial-gradient(ellipse at 50% 60%, #2e8bd0, #175393 68%, #0d2c60);
+  box-shadow: inset 0 4px 10px rgba(255, 255, 255, .45), inset 0 -16px 24px rgba(2, 16, 48, .74), 0 0 0 3px rgba(255, 232, 155, .82);
 }
 .table-surface::after {
   content: "";
   position: absolute;
-  inset: 2.5%;
-  border: 1px solid rgba(255, 230, 183, .3);
+  inset: 2.2%;
+  border: 2px solid rgba(255, 235, 164, .42);
   border-radius: 50%;
-  background: radial-gradient(ellipse at 32% 16%, rgba(255, 255, 255, .16), transparent 38%);
+  background: radial-gradient(ellipse at 34% 15%, rgba(255, 255, 255, .15), transparent 42%);
 }
 .wheel-glow-disabled .table-rim,
-.wheel-glow-disabled .table-surface::after { filter: none; opacity: .58; }
+.wheel-glow-disabled .table-surface::after { filter: none; opacity: .68; }
 canvas#wheel {
+  position: absolute;
+  inset: 3.4%;
   z-index: 2;
-  transform: rotateX(22deg);
-  transform-origin: center;
-  filter: drop-shadow(0 10px 13px rgba(5, 15, 11, .35));
+  width: 93.2%;
+  height: 93.2%;
+  border-radius: 50%;
+  display: block;
+  transform-origin: 50% 50%;
+  transform: rotateX(16deg) rotate(var(--wheel-rotation, 0rad));
+  filter: drop-shadow(0 11px 12px rgba(3, 20, 47, .42));
+  will-change: transform;
 }
 .wheel-glow-disabled canvas#wheel { filter: none; }
-.bottle-view {
+.wheel-pointer {
   position: absolute;
-  inset: 0;
-  z-index: 3;
-  perspective: 1100px;
+  top: -2.3%;
+  left: 50%;
+  z-index: 6;
+  width: clamp(48px, 9vw, 72px);
+  height: auto;
+  overflow: visible;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 7px 6px rgba(35, 18, 0, .5));
   pointer-events: none;
 }
-.bottle-plane {
+.wheel-hub {
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 5;
+  width: clamp(88px, 22%, 168px);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%) rotateX(16deg);
+  border: 5px solid #f7d56f;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 24%, #fff4bc, #e6aa32 52%, #92540f);
+  box-shadow: 0 8px 0 #784611, 0 13px 20px rgba(1, 15, 40, .58), inset 0 2px 5px rgba(255, 255, 255, .92);
+  pointer-events: none;
+}
+.wheel-hub img {
   width: 82%;
-  transform: translate(-50%, -50%) rotateX(22deg);
-  transform-style: preserve-3d;
-}
-.bottle-spin {
+  height: 82%;
+  object-fit: contain;
+  border-radius: 50%;
   display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  transform: rotate(270deg);
-  transform-origin: 50% 50%;
-  filter: drop-shadow(0 9px 4px rgba(0, 0, 0, .4));
-  will-change: transform;
+  filter: drop-shadow(0 2px 3px rgba(0, 15, 45, .45));
 }
-.center-cap { z-index: 4; width: clamp(74px, 18vw, 128px); height: clamp(74px, 18vw, 128px); transform: translate(-50%, -50%) rotateX(22deg); }
-.center-cap img { opacity: .9; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .5)); }
 .session-controls {
   width: min(100%, 760px);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px;
-  margin-top: 5px;
+  margin-top: 8px;
 }
 .control-button {
   min-width: 0;
   min-height: 46px;
   padding: 9px 10px;
-  border: 1px solid rgba(210, 229, 255, .26);
+  border: 1px solid rgba(255, 236, 178, .34);
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(40, 76, 111, .94), rgba(18, 43, 70, .98));
-  box-shadow: 0 4px 0 rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .14);
-  color: #f4f8ff;
+  background: linear-gradient(180deg, #397fc0, #164477);
+  box-shadow: 0 5px 0 #0a2446, inset 0 1px rgba(255, 255, 255, .24);
+  color: #f7fbff;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 850;
   line-height: 1.25;
   cursor: pointer;
   touch-action: manipulation;
   transition: transform .12s ease, filter .12s ease, background .12s ease;
 }
 .control-button:hover:not(:disabled) { filter: brightness(1.16); }
-.control-button:active:not(:disabled) { transform: translateY(2px); }
-.control-button:disabled { cursor: default; opacity: .52; }
-.control-start { border-color: rgba(255, 229, 163, .76); background: linear-gradient(180deg, #f9d778, #ba7628); color: #291805; }
-.buttons { margin-top: 8px; }
+.control-button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #0a2446; }
+.control-button:disabled { cursor: default; opacity: .55; }
+.control-start {
+  border-color: #fff0a5;
+  background: linear-gradient(180deg, #ffe884, #e6a62e 62%, #ad6815);
+  box-shadow: 0 5px 0 #78440b, inset 0 1px rgba(255, 255, 255, .75);
+  color: #2c1800;
+}
+.buttons { margin-top: 10px; }
 .btn-3d { touch-action: manipulation; }
 body.game-paused .nebula { animation-play-state: paused; }
 
 @media (max-width: 600px) {
   .wheel-stage { width: min(100%, 620px); }
-  .table-base { transform: translateY(3.5%) rotateX(22deg); }
-  .table-rim, .table-surface, canvas#wheel { transform: rotateX(22deg); }
+  .table-base { transform: translateY(3%) rotateX(16deg); }
+  .table-rim, .table-surface { transform: rotateX(16deg); }
+  canvas#wheel { transform: rotateX(16deg) rotate(var(--wheel-rotation, 0rad)); }
   .table-surface { border-width: 5px; }
-  .bottle-plane { width: 86%; }
   .session-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .control-button { min-height: 44px; padding: 8px 6px; font-size: 13px; }
 }
 @media (max-width: 420px) {
   .wheel-stage { width: min(100%, calc(100vw - 48px)); }
+  .wheel-pointer { width: 52px; }
   .buttons { grid-template-columns: 1fr; gap: 9px; }
   .btn-3d { padding: 14px 12px; font-size: 18px; }
   .grid-controls { flex-wrap: wrap; }
   .control-card { min-height: 42px; padding: 10px 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bottle-spin { will-change: auto; }
+  canvas#wheel { will-change: auto; }
   .table-base, .table-rim, .table-surface { scroll-behavior: auto; }
 }
