@@ -237,3 +237,162 @@ body.game-paused .nebula { animation-play-state: paused; }
   canvas#wheel { will-change: auto; }
   .table-base, .table-rim, .table-surface { scroll-behavior: auto; }
 }
+
+/* Khmer festival styling: lanterns, warm gold edges, and a readable pinned brand header. */
+.cosmic-backdrop {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(69, 122, 238, .45), transparent 54%),
+    radial-gradient(ellipse at 8% 62%, rgba(221, 102, 66, .18), transparent 38%),
+    radial-gradient(ellipse at 92% 46%, rgba(255, 188, 72, .13), transparent 42%),
+    linear-gradient(180deg, #091c4b 0%, #111344 58%, #07132e 100%);
+}
+.festival-scene { position: absolute; inset: 0; overflow: hidden; }
+.festival-lanterns { position: absolute; inset: 0 0 auto; height: 210px; }
+.festival-lanterns span {
+  position: absolute;
+  top: -4px;
+  width: clamp(15px, 2vw, 25px);
+  height: clamp(34px, 5vw, 54px);
+  border: 1px solid rgba(255, 230, 156, .88);
+  border-radius: 48% 48% 38% 38%;
+  background: linear-gradient(90deg, #bd3b27 0%, #ff9b37 28%, #ffe28a 50%, #e8522d 76%, #a72c26 100%);
+  box-shadow: 0 0 12px 3px rgba(255, 151, 51, .46), 0 0 30px rgba(255, 193, 76, .26), inset 0 0 8px rgba(255, 255, 215, .72);
+  transform-origin: 50% -24px;
+  animation: lanternSway 4s ease-in-out infinite alternate;
+}
+.festival-lanterns span::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  height: 24px;
+  border-left: 1px solid rgba(255, 222, 156, .62);
+}
+.festival-lanterns span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 5px;
+  height: 8px;
+  border-radius: 0 0 4px 4px;
+  background: #ffd36a;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 9px rgba(255, 188, 72, .7);
+}
+.festival-lanterns span:nth-child(1) { left: 5%; top: 3px; }
+.festival-lanterns span:nth-child(2) { left: 19%; top: 34px; animation-delay: -.9s; }
+.festival-lanterns span:nth-child(3) { left: 35%; top: 9px; animation-delay: -1.8s; }
+.festival-lanterns span:nth-child(4) { left: 51%; top: 44px; animation-delay: -.5s; }
+.festival-lanterns span:nth-child(5) { left: 68%; top: 8px; animation-delay: -2.4s; }
+.festival-lanterns span:nth-child(6) { left: 84%; top: 32px; animation-delay: -1.3s; }
+.festival-lanterns span:nth-child(7) { right: 4%; top: 1px; animation-delay: -2s; }
+.festival-skyline {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: clamp(150px, 30vh, 340px);
+  opacity: .34;
+  filter: drop-shadow(0 -8px 20px rgba(39, 73, 193, .35));
+}
+@keyframes lanternSway { from { rotate: -3deg; } to { rotate: 3deg; } }
+
+.wrap { max-width: 1060px; margin: 0 auto; padding: 12px clamp(10px, 2vw, 20px); }
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  gap: 14px;
+  margin: 0 calc(-1 * clamp(10px, 2vw, 20px)) 14px;
+  padding: 9px clamp(10px, 2vw, 20px);
+  border: 1px solid rgba(255, 223, 134, .28);
+  border-top: 0;
+  border-radius: 0 0 19px 19px;
+  background: linear-gradient(110deg, rgba(8, 26, 73, .95), rgba(26, 42, 110, .92) 58%, rgba(77, 38, 86, .91));
+  box-shadow: 0 7px 20px rgba(1, 8, 28, .48), inset 0 -1px rgba(255, 227, 140, .24);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+.logo {
+  flex: 0 0 clamp(58px, 8vw, 84px);
+  width: clamp(58px, 8vw, 84px);
+  height: clamp(58px, 8vw, 84px);
+  border: 3px solid #ffda73;
+  box-shadow: 0 4px 0 #9c541b, 0 8px 20px rgba(0, 0, 0, .4), inset 0 0 0 2px rgba(255, 255, 255, .4);
+}
+.title { min-width: 0; }
+.festival-kicker {
+  display: block;
+  margin-bottom: 1px;
+  color: #ffe9a0;
+  font-size: clamp(10px, 1.6vw, 13px);
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-shadow: 0 2px 4px rgba(9, 8, 38, .8);
+}
+.title h1 {
+  color: #fff5be;
+  font-size: clamp(19px, 3vw, 30px);
+  font-weight: 1000;
+  line-height: 1.32;
+  text-shadow: 0 1px 0 #fffbe2, 0 3px 0 #edb83f, 0 5px 0 #ad581c, 0 7px 0 #622a27, 0 10px 15px rgba(0, 0, 0, .72);
+  -webkit-text-stroke: .35px rgba(255, 255, 224, .7);
+}
+.title p { color: #e9f2ff; text-shadow: 0 2px 4px rgba(0, 0, 0, .7); }
+.panel {
+  border-color: rgba(255, 221, 139, .28);
+  background: linear-gradient(150deg, rgba(24, 45, 101, .88), rgba(11, 25, 58, .93) 54%, rgba(47, 28, 73, .88));
+  box-shadow: 0 17px 42px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .09);
+}
+.wheel-hub {
+  width: clamp(94px, 28%, 210px);
+  border: 6px solid #ffe28a;
+  background: radial-gradient(circle at 30% 22%, #fff9d6, #ffcf55 48%, #cf7e1e 76%, #773c21);
+  box-shadow: 0 9px 0 #843e17, 0 16px 24px rgba(1, 9, 31, .68), inset 0 3px 8px rgba(255, 255, 255, .94), 0 0 22px rgba(255, 205, 88, .5);
+}
+.wheel-hub img {
+  width: 93%;
+  height: 93%;
+  filter: drop-shadow(0 3px 5px rgba(11, 16, 49, .68));
+}
+.section-heading, .result #resultTitle {
+  color: #fff0a9;
+  text-shadow: 0 2px 0 #815023, 0 4px 10px rgba(0, 0, 0, .58);
+}
+.control-button, .btn-3d, .control-card {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .24), 0 3px 5px rgba(0, 0, 0, .48);
+}
+.control-start, .btn-gold { background: linear-gradient(180deg, #fff0a2, #ffc448 58%, #d98220); }
+.control-start { color: #45200a; }
+.btn-3d { box-shadow: 0 7px 0 rgba(88, 39, 12, .72), 0 14px 23px rgba(0, 0, 0, .35), inset 0 2px rgba(255, 255, 255, .56); }
+.btn-3d:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 3px 0 rgba(88, 39, 12, .72), 0 7px 12px rgba(0, 0, 0, .3); }
+.players-panel, .pool-stat, .result {
+  border-color: rgba(255, 220, 132, .19);
+}
+.players-panel { background: linear-gradient(130deg, rgba(17, 38, 88, .76), rgba(31, 28, 69, .7)); }
+.pool-stat { box-shadow: inset 0 1px rgba(255, 255, 255, .08); }
+.game-note, .footer { text-shadow: 0 2px 6px rgba(0, 0, 0, .72); }
+.players-panel, #playersSection { scroll-margin-top: 116px; }
+
+@media (max-width: 600px) {
+  .wrap { margin: 0 auto; padding: 8px 10px; }
+  .header { gap: 10px; margin: 0 -10px 10px; padding: 7px 10px; border-radius: 0 0 15px 15px; }
+  .logo { flex-basis: 58px; width: 58px; height: 58px; }
+  .title h1 { font-size: clamp(17px, 5vw, 21px); line-height: 1.28; }
+  .title p { margin-top: 2px; font-size: 11px; }
+  .festival-kicker { font-size: 10px; }
+  .panel { padding: 12px; border-radius: 17px; }
+  .wheel-hub { width: clamp(94px, 28%, 160px); border-width: 4px; }
+}
+@media (max-width: 360px) {
+  .header { gap: 8px; }
+  .logo { flex-basis: 52px; width: 52px; height: 52px; }
+  .title h1 { font-size: 16px; }
+  .festival-kicker { font-size: 9px; }
+  .wheel-hub { width: 92px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .festival-lanterns span { animation: none; }
+}
