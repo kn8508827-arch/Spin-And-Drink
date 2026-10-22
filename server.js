@@ -25,8 +25,9 @@ const MIME = {
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "no-referrer",
-  "X-Frame-Options": "DENY",
-  "Content-Security-Policy": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+  // three.js is served from /vendor; only Google Fonts and Telegram's Mini App script come from outside.
+  // frame-ancestors allows Telegram Web (web.telegram.org) to show the game as a Mini App.
+  "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://telegram.org; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
 };
 
 function createInitialState() {
@@ -533,7 +534,8 @@ function createApp(config = {}) {
       res.writeHead(200, {
         ...SECURITY_HEADERS,
         "Content-Type": MIME[path.extname(filePath).toLowerCase()] || "application/octet-stream",
-        "Cache-Control": "no-cache",
+        // three.js and images rarely change: let phones keep them for a week instead of re-downloading.
+        "Cache-Control": /^\/(vendor|assets)\//.test(pathname) ? "public, max-age=604800" : "no-cache",
         "Content-Length": data.length
       });
       res.end(req.method === "HEAD" ? undefined : data);

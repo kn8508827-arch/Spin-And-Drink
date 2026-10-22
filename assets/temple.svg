@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220">
-  <g fill="none" stroke="#fff" stroke-opacity="0.06">
-    <path d="M50 160 L100 120 L150 160 L200 120 L250 160 L300 120 L350 160"/>
-  </g>
-  <g fill="#052a5a" opacity="0.95">
-    <path d="M0 180 L40 120 L80 140 L120 100 L160 130 L200 90 L240 140 L280 110 L320 150 L360 120 L400 160 L1200 160 L1200 220 L0 220 Z"/>
-  </g>
-</svg>

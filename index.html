@@ -2,187 +2,80 @@
 <html lang="km">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#08152d">
-  <title>បង្វិលផឹក 💙🍻😆 · Team ស្មោះស្នេហ៍</title>
-  <link rel="icon" href="/assets/team-emblem.png?v=2" type="image/png">
-  <link rel="stylesheet" href="/css/premium-ui.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070818">
+  <title>Spin &amp; Drink 3D · Team ស្មោះស្នេហ៍</title>
+  <link rel="icon" href="/assets/emblem-384.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/neo.css?v=3d-2050">
+  <script src="https://telegram.org/js/telegram-web-app.js" async></script>
 </head>
 <body>
-  <div class="cosmic-backdrop" aria-hidden="true">
-    <canvas id="starfield"></canvas>
-    <div class="nebula nebula-one"></div>
-    <div class="nebula nebula-two"></div>
-    <div class="spiral-galaxy galaxy-one"></div>
-    <div class="spiral-galaxy galaxy-two"></div>
-    <div class="cosmic-dust"></div>
-    <div class="festival-scene">
-      <div class="festival-lanterns"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <svg class="festival-skyline" viewBox="0 0 1600 420" preserveAspectRatio="xMidYMax slice">
-        <path fill="#17183e" d="M0 420V310h92v-44l34-36 34 36v44h112v-65l42-49 42 49v65h125v-47l31-30 31 30v47h141v-65l46-53 46 53v65h89v-111l55-61 55 61v111h75v-75l43-48 43 48v75h151v-60l37-41 37 41v60h120v-87l51-57 51 57v87h75v-52l40-44 40 44v52h111v-68l42-46 42 46v68h70v110Z"/>
-        <g fill="#252356">
-          <path d="M535 420V280h48v-46l38-35 38 35v46h38v-68l48-44 48 44v68h35V190l52-68 52 68v230Z"/>
-          <path d="M1010 420V285h50v-46l36-34 36 34v46h56v-72l45-42 45 42v72h54v-52l34-31 34 31v52h100v135Z"/>
-          <path d="M0 420V337h110v-43l31-27 31 27v43h93v-56l39-35 39 35v56h100v-43l31-28 31 28v43h91v83Z"/>
-        </g>
-        <g fill="#3a2860" opacity=".92">
-          <path d="M704 420V286l42-42 42 42v134Zm76 0V224l55-78 55 78v196Zm110 0V286l42-42 42 42v134Z"/>
-          <path d="M1360 420V300l36-37 36 37v120Zm-1180 0V314l34-35 34 35v106Z"/>
-        </g>
-      </svg>
+  <div id="stage3d" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="brand"><img src="/assets/emblem-384.png" alt=""><b>SPIN<span>&amp;</span>DRINK</b></div>
+    <div class="top-buttons">
+      <button class="icon" id="musicBtn" type="button" aria-pressed="true" aria-label="ភ្លេង">🎵</button>
+      <button class="icon" id="soundBtn" type="button" aria-pressed="true" aria-label="សំឡេង">🔊</button>
+      <button class="icon" id="settingsBtn" type="button" aria-label="ការកំណត់">⚙️</button>
     </div>
+  </header>
+
+  <nav class="players" id="players" aria-label="អ្នកលេង"></nav>
+
+  <footer class="bottom">
+    <div class="turn" id="turn" aria-live="polite">ចុច SPIN ដើម្បីលេង 🎉</div>
+    <button class="spin" id="spinBtn" type="button"><span>SPIN</span><small>បង្វិល</small></button>
+    <div class="pool" id="pool" hidden></div>
+  </footer>
+
+  <div class="sheet-bg" id="addSheet" hidden>
+    <form class="sheet small" id="addForm">
+      <h3>👤 បន្ថែមអ្នកលេង</h3>
+      <input id="addName" maxlength="24" autocomplete="off" placeholder="ឈ្មោះ" required>
+      <div class="row"><button class="btn" type="button" id="addCancel">បោះបង់</button><button class="btn primary" type="submit">បន្ថែម</button></div>
+    </form>
   </div>
 
-  <div class="wrap">
-    <header class="header">
-      <div class="logo"><img src="/assets/team-emblem.png?v=2" alt="Team ស្មោះស្នេហ៍"></div>
-      <div class="title"><h1>បង្វិលផឹក 💙🍻😆</h1><p>បង្វិលសប្បាយ ជាមួយមិត្តភក្តិ</p></div>
-    </header>
+  <div class="result-bg" id="result" hidden>
+    <canvas id="confetti"></canvas>
+    <section class="result-card" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+      <div class="who" id="resultWho"></div>
+      <div class="big-emoji" id="resultEmoji">🎉</div>
+      <h2 id="resultTitle"></h2>
+      <p id="resultDesc"></p>
+      <button class="btn primary" id="resultOk" type="button">OK 👍</button>
+    </section>
+  </div>
 
-    <main class="panel">
-      <section class="players-panel" aria-labelledby="playersTitle" id="playersSection">
-        <h2 class="section-heading" id="playersTitle">👥 អ្នកលេង</h2>
-        <form class="player-form" id="playerForm">
-          <label class="sr-only" for="playerName">ឈ្មោះអ្នកលេង</label>
-          <input id="playerName" name="playerName" maxlength="40" autocomplete="off" placeholder="បញ្ចូលឈ្មោះអ្នកលេង" required>
-          <button class="btn-add" type="submit">បន្ថែម</button>
-        </form>
-        <div class="player-list" id="playerList" aria-live="polite"></div>
-        <p class="game-note" role="status">លេងឥតគិតថ្លៃសម្រាប់អ្នកទាំងអស់គ្នា។ បន្ថែមឈ្មោះ រួចចុចចាប់ផ្ដើមដើម្បីលេង។</p>
-      </section>
-
-      <section class="pool-summary" aria-label="សង្ខេបប្រាក់រង្វាន់">
-        <div class="pool-stat"><span>ប្រាក់រង្វាន់</span><strong id="poolAmount">0៛</strong></div>
-        <div class="pool-stat"><span>ចំនួនអ្នកលេង</span><strong id="playerCount">0</strong></div>
-      </section>
-
-      <div class="wheel-wrap" aria-live="polite">
-        <div class="wheel-stage" id="wheelStage">
-          <div class="table-base" aria-hidden="true"></div>
-          <div class="table-rim" aria-hidden="true"></div>
-          <div class="table-surface" aria-hidden="true"></div>
-          <canvas id="wheel" width="900" height="900" role="img" aria-label="កង់សំណាង"></canvas>
-          <svg class="wheel-pointer" viewBox="0 0 84 110" aria-hidden="true">
-            <defs>
-              <linearGradient id="pointerGold" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#fff4b8"/>
-                <stop offset=".28" stop-color="#f3c34d"/>
-                <stop offset=".62" stop-color="#b87516"/>
-                <stop offset="1" stop-color="#ffeaa0"/>
-              </linearGradient>
-              <linearGradient id="pointerFace" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#fff9dc"/>
-                <stop offset=".5" stop-color="#f3c94e"/>
-                <stop offset="1" stop-color="#c48221"/>
-              </linearGradient>
-            </defs>
-            <path d="M42 4C63 4 79 20 79 41L42 105 5 41C5 20 21 4 42 4Z" fill="url(#pointerGold)" stroke="#fff4be" stroke-width="3"/>
-            <path d="M42 13C58 13 70 25 70 40L42 88 14 40C14 25 26 13 42 13Z" fill="url(#pointerFace)" stroke="#9a5d13" stroke-width="2"/>
-            <circle cx="42" cy="31" r="9" fill="#fff7d5" stroke="#d39a31" stroke-width="3"/>
-          </svg>
-          <div class="wheel-hub" aria-hidden="true"><img src="/assets/team-emblem.png?v=2" alt="" width="84" height="84"></div>
-        </div>
-
-        <div class="session-controls" role="group" aria-label="ការគ្រប់គ្រងហ្គេម">
-          <button id="startGame" class="control-button control-start" type="button">▶ ចាប់ផ្ដើម</button>
-          <button id="pauseGame" class="control-button" type="button" disabled>Ⅱ ផ្អាក</button>
-          <button id="restartGame" class="control-button" type="button" title="កំណត់ទីតាំងកង់ឡើងវិញ ដោយរក្សាអ្នកលេង និងវេន">↻ ចាប់ផ្ដើមឡើងវិញ</button>
-          <button id="soundToggle" class="control-button" type="button" aria-pressed="true" aria-label="បិទ ឬបើកសំឡេង">🔊 សំឡេង</button>
-        </div>
-
-        <div class="buttons">
-          <button id="spin" class="btn-3d btn-gold" type="button" disabled>🎯 បង្វិលកង់</button>
-          <button id="luckyMoney" class="btn-3d btn-money" type="button" disabled>💰 សំណាងបានលុយ</button>
-        </div>
-
-        <div class="grid-controls">
-          <div class="control-card">💧 ភេសជ្ជៈ</div>
-          <button class="control-card" id="playersShortcut" type="button">👥 អ្នកលេង</button>
-          <button class="control-card" id="openSettings" type="button" aria-haspopup="dialog">⚙️ ការកំណត់</button>
-        </div>
+  <div class="sheet-bg" id="settings" hidden>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <header class="sheet-head"><h3 id="settingsTitle">⚙️ ការកំណត់</h3><button class="icon" id="settingsClose" type="button" aria-label="បិទ">✕</button></header>
+      <h4>⏱️ រយៈពេលបង្វិល</h4>
+      <div class="seg" id="durationSeg">
+        <button type="button" data-d="3">៣ វិ</button><button type="button" data-d="5">៥ វិ</button><button type="button" data-d="7">៧ វិ</button><button type="button" data-d="10">១០ វិ</button>
       </div>
-
-      <section class="result" id="result" aria-live="polite">
-        <small>លទ្ធផល និងការណែនាំ</small>
-        <div id="resultTitle">ត្រៀមខ្លួនហើយឬ?</div>
-        <div id="resultDesc">បន្ថែមអ្នកលេង និងចាប់ផ្ដើមជាមួយបង្វិលកង់!</div>
-        <div class="action-area" id="actionArea"></div>
-      </section>
-    </main>
-    <p class="footer">💧 លេងដោយមានទំលាប់ និងកុំបង្ខំអ្នកណាឲ្យផឹក</p>
-  </div>
-
-  <div class="dialog-backdrop" id="resultBackdrop" hidden>
-    <section class="result-card" id="resultCard" role="dialog" aria-modal="true" aria-labelledby="cardTitle">
-      <canvas class="celebration-canvas" id="celebrationCanvas" aria-hidden="true"></canvas>
-      <div class="result-sparkle" aria-hidden="true">✨</div>
-      <div class="celebration-ribbon" aria-hidden="true">🎉 អបអរសាទរ! 🎊</div>
-      <h2 id="cardTitle"></h2>
-      <div id="cardDesc"></div>
-      <div class="dialog-actions"><button id="closeResult" class="btn-3d btn-secondary" type="button">បិទ</button></div>
+      <h4>🎡 ធាតុលើកង់</h4>
+      <div class="items" id="items"></div>
+      <form class="add-item" id="itemForm">
+        <input id="itemEmoji" maxlength="4" value="✨" aria-label="Emoji">
+        <input id="itemTitle" maxlength="24" placeholder="ធាតុថ្មី" required aria-label="ឈ្មោះធាតុ">
+        <input id="itemColor" type="color" value="#7c4dff" aria-label="ពណ៌">
+        <button class="btn primary" type="submit">＋</button>
+      </form>
+      <h4>👥 អ្នកលេង</h4>
+      <div class="items" id="playerItems"></div>
+      <div class="row"><button class="btn" id="resetWheel" type="button">↺ កង់ដើម</button></div>
+      <p class="note">🍹 លេងសប្បាយ កុំបង្ខំគ្នាផឹក — ជ្រើសភេសជ្ជៈមិនមានជាតិអាល់កុលក៏បាន</p>
     </section>
   </div>
 
-  <div class="dialog-backdrop" id="settingsBackdrop" hidden>
-    <section class="settings-card" id="settingsDialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
-      <header class="settings-header">
-        <div><p class="eyebrow">GALAXY GAME</p><h2 id="settingsTitle">ការកំណត់កង់</h2></div>
-        <button class="icon-button" id="closeSettings" type="button" aria-label="បិទការកំណត់">✕</button>
-      </header>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="loading" class="loading"><img src="/assets/emblem-384.png" alt=""><span>LOADING…</span></div>
 
-      <section class="settings-section" aria-labelledby="wheelEditorTitle">
-        <div class="section-title-row"><div><h3 id="wheelEditorTitle">កែធាតុកង់</h3><p>ប្ដូរឈ្មោះ Emoji ពណ៌ និងលំដាប់។ ការកែប្រែត្រូវបានរក្សាទុកក្នុងឧបករណ៍នេះ។</p></div></div>
-        <div class="wheel-editor" id="wheelItemsEditor"></div>
-        <form class="add-option-form" id="addOptionForm">
-          <label class="field-label" for="newOptionName">ឈ្មោះធាតុថ្មី</label>
-          <div class="add-option-fields">
-            <input id="newOptionName" maxlength="40" placeholder="ឧ. លេងសំណួរ" required>
-            <input id="newOptionEmoji" maxlength="8" value="✨" aria-label="Emoji ធាតុថ្មី">
-            <input id="newOptionColor" type="color" value="#9b70e8" aria-label="ពណ៌ធាតុថ្មី">
-            <button class="btn-add" type="submit">＋ បន្ថែម</button>
-          </div>
-        </form>
-        <div class="settings-actions">
-          <button id="saveWheelOptions" class="btn-add" type="button">រក្សាទុកការកែប្រែ</button>
-          <button id="restoreWheelDefaults" class="btn-quiet" type="button">ស្ដារធាតុកង់ដើម</button>
-        </div>
-      </section>
-
-      <section class="settings-section" aria-labelledby="spinSettingsTitle">
-        <h3 id="spinSettingsTitle">របៀបបង្វិល</h3>
-        <div class="settings-grid">
-          <label class="setting-field">ល្បឿនកង់
-            <select id="spinSpeed"><option value="verySlow">យឺតខ្លាំង</option><option value="slow">យឺត</option><option value="normal">ធម្មតា</option><option value="fast">លឿន</option><option value="veryFast">លឿនខ្លាំង</option></select>
-          </label>
-          <label class="setting-field">រយៈពេលបង្វិល
-            <select id="spinDuration"><option value="3">៣ វិនាទី</option><option value="5">៥ វិនាទី</option><option value="8">៨ វិនាទី</option><option value="10">១០ វិនាទី</option><option value="15">១៥ វិនាទី</option></select>
-          </label>
-          <label class="setting-field setting-field-wide">រចនាបថចលនា
-            <select id="animationStyle"><option value="smooth">បង្វិលរលូន</option><option value="bouncy">កន្ត្រាក់សប្បាយ</option><option value="cinematic">Galaxy បែបភាពយន្ត</option><option value="energetic">រហ័ស និងស្វាហាប់</option></select>
-          </label>
-        </div>
-      </section>
-
-      <section class="settings-section" aria-labelledby="effectsTitle">
-        <h3 id="effectsTitle">សំឡេង និងបែបផែន</h3>
-        <div class="toggle-list">
-          <label class="toggle-row"><span>សំឡេងបែបផែន</span><input id="soundEffects" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
-          <label class="toggle-row"><span>តន្ត្រីផ្ទៃខាងក្រោយ</span><input id="backgroundMusic" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
-          <label class="toggle-row"><span>ផ្កាយ និងធូលី Galaxy</span><input id="galaxyParticles" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
-          <label class="toggle-row"><span>ពន្លឺជុំវិញកង់</span><input id="wheelGlow" type="checkbox"><span class="toggle-switch" aria-hidden="true"></span></label>
-        </div>
-        <label class="setting-field volume-field" for="masterVolume">សំឡេងសរុប <output id="volumeValue">៥០%</output>
-          <input id="masterVolume" type="range" min="0" max="100" step="1" value="50">
-        </label>
-      </section>
-
-      <footer class="settings-footer">
-        <p id="settingsStatus" role="status" aria-live="polite"></p>
-        <button id="resetAllSettings" class="btn-quiet" type="button">ស្ដារការកំណត់ទាំងអស់</button>
-      </footer>
-    </section>
-  </div>
-
-  <script src="/js/game.js" defer></script>
+  <script src="/js/wheel-logic.js?v=3d-2050"></script>
+  <script src="/js/app3d.js?v=3d-2050" defer></script>
 </body>
 </html>
