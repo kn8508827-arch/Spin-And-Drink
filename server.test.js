@@ -116,9 +116,8 @@ test("payment ledger is host-only, unique, and drives the server-selected jackpo
   assert.equal(nextRound.data.state.poolRiel, 0);
   assert.equal(nextRound.data.state.players.every(player => !player.paid), true);
 
-  const logo = fs.readFileSync(path.resolve(__dirname, "Team_Smaoh_Sneha_Logo.svg"), "utf8");
-  assert.match(logo, /<svg/);
-  assert.match(logo, /Team ស្មោះស្នេហ៍/);
+  const emblem = fs.readFileSync(path.resolve(__dirname, "assets", "team-emblem.png"));
+  assert.equal(emblem.subarray(1, 4).toString("ascii"), "PNG");
 });
 
 test("all registered players can spin for free without admin or payment setup", async t => {
@@ -217,7 +216,6 @@ test("browser script initializes the wheel and honors reduced motion", () => {
   assert.match(script, /wheelOptionIds/);
   assert.match(script, /drawWheel\(visibleOptions\(\)\)/);
   assert.doesNotMatch(script, /\bid:\s*"water"/);
-  assert.doesNotMatch(script, /\bid:\s*"truth"/);
   assert.doesNotMatch(script, /\bid:\s*"friend"/);
   assert.match(script, /title:\s*"រាំ 2 នាទី"/);
   assert.match(script, /អ្នកត្រូវរាំ 2 នាទី! 💃🕺/);

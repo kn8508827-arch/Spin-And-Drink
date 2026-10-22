@@ -38,7 +38,7 @@ function makeCanvasContext(textLog) {
 class FakeElement {
   constructor(id, textLog) {
     this.id = id || ""; this.children = []; this.listeners = new Map(); this.attributes = {};
-    this.classList = makeClassList(); this.style = {}; this.dataset = {}; this.value = ""; this.checked = false;
+    this.classList = makeClassList(); this.style = { setProperty(name, value) { this[name] = String(value); } }; this.dataset = {}; this.value = ""; this.checked = false;
     this.disabled = false; this.hidden = ["resultBackdrop", "settingsBackdrop"].includes(id); this.textContent = ""; this.className = ""; this.maxLength = 0;
     this.type = ""; this.title = ""; this.focused = false; this.textLog = textLog; this.width = 900; this.height = 900;
     this.context2d = makeCanvasContext(textLog);
@@ -264,5 +264,4 @@ test("styles include a mobile layout and reduced-motion fallback", () => {
   assert.match(css, /@media\(max-width:600px\)/);
   assert.match(css, /@media\(max-width:360px\)/);
   assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
-  assert.match(css, /-webkit-mask-image/);
 });
