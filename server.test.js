@@ -208,23 +208,51 @@ test("state survives a fresh app instance and rejects cross-origin player edits"
   assert.equal(expiredSession.status, 401);
 });
 
-test("browser script initializes the wheel and honors reduced motion", () => {
+test("3D page loads local three.js, wheel logic and the app script", () => {
   const html = fs.readFileSync(path.resolve(__dirname, "index.html"), "utf8");
-  const script = fs.readFileSync(path.resolve(__dirname, "js", "game.js"), "utf8");
-  assert.doesNotThrow(() => new Function(script));
-  assert.match(html, /<script src="\/js\/game\.js" defer><\/script>/);
-  assert.match(script, /wheelOptionIds/);
-  assert.match(script, /drawWheel\(visibleOptions\(\)\)/);
-  assert.doesNotMatch(script, /\bid:\s*"water"/);
-  assert.doesNotMatch(script, /\bid:\s*"friend"/);
-  assert.match(script, /title:\s*"រាំ 2 នាទី"/);
-  assert.match(script, /អ្នកត្រូវរាំ 2 នាទី! 💃🕺/);
-  assert.match(script, /spinButton\.disabled\s*=\s*busy/);
-  assert.match(script, /STORAGE_OPTIONS/);
-  assert.match(script, /soundEffects/);
-  assert.match(script, /galaxyParticles/);
-  assert.match(script, /masterVolume/);
-  assert.match(html, /លេងឥតគិតថ្លៃសម្រាប់អ្នកទាំងអស់គ្នា/);
-  assert.match(html, /id="playerCount"/);
-  assert.match(html, /id="playerForm"/);
+  const app = fs.readFileSync(path.resolve(__dirname, "js", "app3d.js"), "utf8");
+  assert.doesNotThrow(() => new Function(app));
+  assert.match(html, /<script src="\/js\/wheel-logic\.js[^"]*"><\/script>/);
+  assert.match(html, /<script src="\/js\/app3d\.js[^"]*" defer><\/script>/);
+  assert.match(html, /id="spinBtn"/);
+  assert.match(app, /\/vendor\/three\.min\.js/);
+  assert.match(app, /wheelOptionIds/);
+  assert.match(app, /\/api\/turn\/advance/);
+  assert.ok(fs.existsSync(path.resolve(__dirname, "vendor", "three.min.js")));
+  assert.match(fs.readFileSync(path.resolve(__dirname, "css", "neo.css"), "utf8"), /prefers-reduced-motion/);
+});
+
+test("wheel logic: defaults, normalisation, money slice and stopping angle", () => {
+  const W = require("./js/wheel-logic.js");
+  const ids = W.DEFAULT_OPTIONS.map(o => o.id);
+  for (const removed of ["water", "truth", "friend"]) assert.ok(!ids.includes(removed));
+  assert.ok(ids.includes("dance-two-minutes") && ids.includes("money"));
+  assert.deepEqual(W.normalize(null).map(o => o.id), ids);
+  const cleaned = W.normalize([{ id: "truth", title: "x" }, { id: "a1", title: " Hi ", emoji: "", color: "bad" }, { id: "a1", title: "dup" }]);
+  assert.equal(cleaned.length, 1); assert.equal(cleaned[0].title, "Hi"); assert.equal(cleaned[0].emoji, "✨");
+  assert.ok(!W.visible(W.DEFAULT_OPTIONS, 0).some(o => o.id === "money"));
+  assert.ok(W.visible(W.DEFAULT_OPTIONS, 500).some(o => o.id === "money"));
+  for (let n = 2; n <= 24; n++) for (let i = 0; i < n; i++) {
+    const end = W.targetAngle(0.7, i, n, 5, (i % 3 - 1) * 0.9);
+    assert.equal(W.indexAt(end, n), i);
+    assert.ok(end >= 0.7 + 5 * Math.PI * 2);
+  }
+  assert.equal(W.ease(0), 0); assert.equal(W.ease(1), 1);
+  assert.equal(W.pickLocal(["a", "b"], () => 0.99), "b");
+});
+
+test("static files: long cache for vendor/assets, Telegram can embed the page", async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "spin-drink-static-"));
+  const app = createApp({ dataDir });
+  await new Promise(resolve => app.server.listen(0, "127.0.0.1", resolve));
+  t.after(() => app.server.close());
+  const base = "http://127.0.0.1:" + app.server.address().port;
+  const vendor = await fetch(base + "/vendor/three.min.js", { method: "HEAD" });
+  assert.equal(vendor.status, 200); assert.match(vendor.headers.get("cache-control"), /max-age=604800/);
+  const page = await fetch(base + "/");
+  assert.equal(page.status, 200); assert.equal(page.headers.get("cache-control"), "no-cache");
+  const csp = page.headers.get("content-security-policy");
+  assert.match(csp, /frame-ancestors 'self' https:\/\/web\.telegram\.org/);
+  assert.match(csp, /script-src 'self' 'unsafe-inline' https:\/\/telegram\.org/);
+  assert.equal(page.headers.get("x-frame-options"), null);
 });

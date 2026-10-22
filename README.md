@@ -4,16 +4,13 @@ A Khmer, mobile-first party wheel served by a small Node.js application.
 
 ## Game features
 
-- A bundled Team ស្មោះស្នេហ៍ logo and a responsive animated galaxy theme.
-- Adjustable spin speed, 3–15 second duration, and four animation styles, with reduced-motion support.
-- Free play for every registered player. Add names and spin in turn without payment or an admin account.
-- Editable wheel labels, emojis, colors, order, and custom items in Settings. Wheel edits and preferences are saved in this browser.
-- Optional generated spin, tick, and win sounds, background music, particle, and wheel-glow controls.
-- A new **រាំ 2 នាទី** outcome. It does not start a timer automatically.
-- The default wheel no longer includes the three items marked in the supplied screenshot: water, truth-or-dare, and friend-picks.
-- The **សំណាងបានលុយ 💰** outcome appears only when a prize pool has been funded.
-- The server randomly chooses and records an outcome from the wheel item IDs sent by the browser. Since the wheel is customizable in each browser, this casual game is not tamper-proof against a participant who modifies their browser request; the request cannot change the prize pool.
-- Optional host-only payment and prize-settlement API endpoints remain available for deployments that choose to fund a prize pool.
+- **3D wheel (three.js)** on a neon stage: glossy slices with emoji and short labels, gold rim with chasing marquee bulbs, Team ស្មោះស្នេហ៍ emblem hub, gem pointer that kicks on every slice, light beams and floating bokeh. three.js 0.160 is served from `/vendor` (no CDN needed).
+- **One tap to play**: open → press **SPIN** (or swipe the wheel). Adding players is optional; with players the server keeps the turn order (`/api/spin`, `/api/turn/advance`), without players it is a quick local spin.
+- Big result card with the emoji, a one-line description, confetti and a win jingle — very little text on screen.
+- **Chill lo-fi music** (swing drums, soft keys, bass, vinyl crackle) generated in the browser, plus tick, whoosh and win sounds; music and sound toggles; Telegram haptics inside the bot.
+- Settings: spin time (3/5/7/10 s), edit wheel items (emoji, name, colour, delete, add), manage players, reset the wheel. Saved in the browser.
+- The **បានលុយ 💰** slice appears only when a prize pool has been funded through the optional host payment API.
+- Wheel rules live in `js/wheel-logic.js` and are covered by `npm test`.
 
 ## Start locally
 
@@ -23,7 +20,7 @@ Use Node.js 18 or newer, then start the server:
 npm start
 ```
 
-Open `http://localhost:3000`, add player names, and spin. Open **ការកំណត់** to edit wheel items, change spin behavior, and manage audio or galaxy effects. Settings are stored in that browser's local storage. Free play does not require `ADMIN_KEY` or payment setup. If you enable the optional host-only payment API, set `ADMIN_KEY` to a private value of at least 32 characters; do not put it in browser code or commit it.
+Open `http://localhost:3000` and press **SPIN**. Open ⚙️ to edit wheel items, spin time and players. Settings are stored in that browser's local storage. Free play does not require `ADMIN_KEY` or payment setup. If you enable the optional host-only payment API, set `ADMIN_KEY` to a private value of at least 32 characters; do not put it in browser code or commit it.
 
 Run the server checks with `npm test`.
 
