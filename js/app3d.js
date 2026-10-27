@@ -95,7 +95,7 @@ function loadScript(urls) {
   })), Promise.reject());
 }
 
-let T, renderer, scene, camera, wheel, faceMat, pointer, bulbs = [], beams = [], dust, glowTex, rotation = 0, pointerKick = 0;
+let T, renderer, scene, camera, wheel, faceMat, pointer, botHead, bulbs = [], beams = [], dust, glowTex, rotation = 0, pointerKick = 0, laughUntil = 0;
 const R = 3.1;
 
 function makeGlow() {
@@ -108,26 +108,51 @@ function sprite(color, size, opacity = 1) {
   s.scale.set(size, size, 1); return s;
 }
 
-/** Wheel face texture: slices clockwise from the top, big emoji + short label. */
+/** Wheel face texture: slices clockwise from the top, emoji near the rim + big 3D Khmer title. */
 function faceTexture(items) {
-  const size = 1024, c = document.createElement("canvas"); c.width = c.height = size; const g = c.getContext("2d");
-  const cx = size / 2, rad = size / 2 - 6, n = items.length, slice = Math.PI * 2 / n;
+  const size = 2048, k = 2, c = document.createElement("canvas"); c.width = c.height = size; const g = c.getContext("2d");
+  const cx = size / 2, rad = size / 2 - 12, n = items.length, slice = Math.PI * 2 / n, half = Math.sin(Math.min(slice / 2, Math.PI / 3));
   items.forEach((it, i) => {
     const a0 = -Math.PI / 2 + i * slice, a1 = a0 + slice;
     const grad = g.createRadialGradient(cx, cx, rad * 0.15, cx, cx, rad);
     grad.addColorStop(0, shade(it.color, 0.35)); grad.addColorStop(0.75, it.color); grad.addColorStop(1, shade(it.color, -0.35));
     g.beginPath(); g.moveTo(cx, cx); g.arc(cx, cx, rad, a0, a1); g.closePath(); g.fillStyle = grad; g.fill();
-    g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 5; g.stroke();
+    g.strokeStyle = "rgba(255,255,255,.6)"; g.lineWidth = 5 * k; g.stroke();
     g.save(); g.translate(cx, cx); g.rotate(a0 + slice / 2 + Math.PI / 2);
-    const fs = Math.min(120, 520 / n + 40);
     g.textAlign = "center"; g.textBaseline = "middle";
-    g.font = `${fs}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; g.fillText(it.emoji, 0, -rad * 0.72);
-    g.font = `700 ${Math.round(fs * 0.36)}px "Kantumruy Pro", sans-serif`; g.fillStyle = "#fff"; g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = 8;
-    g.fillText(it.title, 0, -rad * 0.47); g.restore();
+    // emoji near the rim
+    const ef = Math.min(128 * k, 2 * rad * 0.86 * half * 0.55);
+    g.font = `${ef}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; g.fillText(it.emoji, 0, -rad * 0.84);
+    // big 3D Khmer title, fitted to the slice width (2 lines when that makes it bigger)
+    const r = rad * 0.58, room = 2 * r * half * 0.9, cap = 104 * k, words = String(it.title).split(/\s+/).filter(Boolean);
+    const fitOne = t => { g.font = `700 100px "Kantumruy Pro", sans-serif`; return Math.min(cap, 100 * room / Math.max(1, g.measureText(t).width)); };
+    let lines = [it.title], fs = fitOne(it.title);
+    if (words.length > 1 && fs < cap * 0.8) {
+      let best = null;
+      for (let j = 1; j < words.length; j++) {
+        const L = [words.slice(0, j).join(" "), words.slice(j).join(" ")], f = Math.min(fitOne(L[0]), fitOne(L[1]), cap * 0.85);
+        if (!best || f > best.f) best = { L, f };
+      }
+      if (best && best.f > fs * 1.15) { lines = best.L; fs = best.f; }
+    }
+    fs = Math.max(30 * k, fs);
+    g.font = `700 ${Math.round(fs)}px "Kantumruy Pro", sans-serif`;
+    const lh = fs * 1.32, y0 = -r - (lines.length - 1) * lh / 2, depth = Math.max(4, Math.round(fs * 0.07));
+    lines.forEach((t, li) => {
+      const y = y0 + li * lh;
+      g.shadowColor = "rgba(0,0,0,0)"; g.fillStyle = shade(it.color, -0.62);
+      for (let d = depth; d >= 1; d--) g.fillText(t, d * 0.45, y + d);              // extruded 3D side
+      g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = 10 * k; g.shadowOffsetY = depth * 0.6;
+      g.lineJoin = "round"; g.lineWidth = fs * 0.13; g.strokeStyle = shade(it.color, -0.7); g.strokeText(t, 0, y);
+      g.shadowColor = "rgba(0,0,0,0)";
+      const tg2 = g.createLinearGradient(0, y - fs / 2, 0, y + fs / 2); tg2.addColorStop(0, "#ffffff"); tg2.addColorStop(0.55, "#ffffff"); tg2.addColorStop(1, "#ffe9a8");
+      g.fillStyle = tg2; g.fillText(t, 0, y);
+    });
+    g.restore();
   });
   const ring = g.createRadialGradient(cx, cx, rad * 0.9, cx, cx, rad); ring.addColorStop(0, "rgba(0,0,0,0)"); ring.addColorStop(1, "rgba(0,0,0,.35)");
   g.fillStyle = ring; g.beginPath(); g.arc(cx, cx, rad, 0, 7); g.fill();
-  const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; return t;
+  const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 16; return t;
 }
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(amt > 0 ? v + (255 - v) * amt : v * (1 + amt))));
@@ -172,10 +197,14 @@ function buildScene() {
     b.position.set(Math.sin(a) * (R + 0.12), Math.cos(a) * (R + 0.12), 0.3); wheel.add(b);
     const s = sprite(0xffd23f, 0.55, 0.8); s.position.copy(b.position); wheel.add(s); bulbs.push({ b, s });
   }
-  // hub with emblem
-  const emblem = new T.TextureLoader().load("/assets/emblem-384.png"); emblem.colorSpace = T.SRGBColorSpace;
-  const hubRing = new T.Mesh(new T.CylinderGeometry(0.72, 0.78, 0.3, 48), gold); hubRing.rotation.x = Math.PI / 2; hubRing.position.z = 0.3; spinner.add(hubRing);
-  const hub = new T.Mesh(new T.CircleGeometry(0.62, 48), new T.MeshBasicMaterial({ map: emblem })); hub.position.z = 0.46; spinner.add(hub);
+  // hub: gold ring + dark glass disk spin with the wheel; Cooler Bot's head stays upright and reacts
+  const hubRing = new T.Mesh(new T.CylinderGeometry(0.88, 0.95, 0.3, 64), gold); hubRing.rotation.x = Math.PI / 2; hubRing.position.z = 0.3; spinner.add(hubRing);
+  const disk = new T.Mesh(new T.CircleGeometry(0.78, 64), new T.MeshStandardMaterial({ color: 0x0b2a8a, metalness: 0.6, roughness: 0.3, emissive: 0x0a2a90, emissiveIntensity: 0.6 }));
+  disk.position.z = 0.46; spinner.add(disk);
+  const headTex = new T.TextureLoader().load("/assets/coolerbot-head.webp"); headTex.colorSpace = T.SRGBColorSpace; headTex.anisotropy = 8;
+  botHead = new T.Mesh(new T.PlaneGeometry(1.75, 1.75), new T.MeshBasicMaterial({ map: headTex, transparent: true, depthWrite: false }));
+  botHead.position.set(0, 0.06, 0.62); wheel.add(botHead);
+  const headGlow = sprite(0x38e1ff, 2.6, 0.45); headGlow.position.set(0, 0.06, 0.5); wheel.add(headGlow); botHead.userData.glow = headGlow;
   // pointer (gem) at the top
   pointer = new T.Group();
   const gem = new T.Mesh(new T.ConeGeometry(0.32, 0.8, 4), new T.MeshStandardMaterial({ color: 0xff3d7f, metalness: 0.4, roughness: 0.1, emissive: 0xff1f6a, emissiveIntensity: 0.6 }));
@@ -206,7 +235,9 @@ function resize() {
   if (!renderer) return;
   const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false);
   camera.aspect = w / h; const portrait = w / h < 0.8;
-  camera.fov = portrait ? 58 : 42; camera.position.set(0, portrait ? 0.4 : 0.6, portrait ? 13.6 : 11.5); camera.lookAt(0, portrait ? 0.6 : 0.3, 0);
+  camera.fov = portrait ? 50 : 42;
+  const fitW = 3.62 / (Math.tan(camera.fov * Math.PI / 360) * camera.aspect);   // wheel + bulbs ≈ 97% of the screen width
+  camera.position.set(0, portrait ? 0.4 : 0.6, portrait ? Math.max(9, fitW) : 11.5); camera.lookAt(0, portrait ? 0.6 : 0.3, 0);
   camera.updateProjectionMatrix();
 }
 let currentItems = [];
@@ -245,6 +276,7 @@ async function refresh() {
 async function spin() {
   if (spinning) return;
   Audio.start(); spinning = true; $("spinBtn").disabled = true; haptic("spin");
+  window.CoolerBot && window.CoolerBot.spin();
   const ids = currentItems.map(i => i.id);
   let outcomeId = null, who = null;
   if (online && server.players.length) {
@@ -264,6 +296,8 @@ async function spin() {
 let confetti = [];
 function showResult(item, who) {
   Audio.win(); haptic("win");
+  laughUntil = performance.now() + 2600;
+  window.CoolerBot && window.CoolerBot.laugh(item);
   $("resultWho").textContent = who ? `🎯 ${who}` : "";
   $("resultEmoji").textContent = item.emoji; $("resultTitle").textContent = item.title; $("resultDesc").textContent = item.desc && item.desc !== item.title ? item.desc : "";
   document.querySelector(".result-card").style.setProperty("--rc", item.color);
@@ -363,6 +397,15 @@ function frame(now) {
   beams.forEach((b, i) => { b.rotation.z = Math.sin(now / 1800 + i) * 0.35; b.material.opacity = 0.04 + (anim ? 0.05 : 0.02) * (1 + Math.sin(now / 300 + i)); });
   dust.rotation.y += dt * 0.02; dust.position.y = Math.sin(now / 3000) * 0.3;
   wheel.position.y = Math.sin(now / 1400) * 0.06;
+  if (botHead) {
+    const laughing = now < laughUntil, k2 = laughing ? 1 : 0;
+    const bob = laughing ? Math.abs(Math.sin(now / 70)) * 0.12 : anim ? Math.sin(now / 90) * 0.04 : Math.sin(now / 900) * 0.03;
+    botHead.position.y = 0.06 + bob;
+    botHead.rotation.z = laughing ? Math.sin(now / 55) * 0.16 : anim ? Math.sin(now / 120) * 0.1 : Math.sin(now / 1600) * 0.05;
+    botHead.rotation.y = anim ? Math.sin(now / 260) * 0.35 : Math.sin(now / 2100) * 0.18;
+    const sc = 1 + k2 * 0.08 * Math.abs(Math.sin(now / 70)); botHead.scale.set(sc, sc, 1);
+    botHead.userData.glow.material.opacity = anim || laughing ? 0.55 + 0.35 * Math.abs(Math.sin(now / 110)) : 0.35 + 0.1 * Math.sin(now / 700);
+  }
   camera.position.x = Math.sin(now / 5000) * 0.35;
   camera.lookAt(0, 0.5, 0);
   drawConfetti(dt);
