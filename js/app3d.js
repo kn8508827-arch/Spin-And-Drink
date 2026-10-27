@@ -1,5 +1,5 @@
 "use strict";
-/* Spin & Drink 3D — three.js wheel, chill lo-fi music, simple one-tap play. */
+/* Cooler Drink 3D — three.js wheel, chill lo-fi music, simple one-tap play. */
 (() => {
 const W = window.WheelLogic;
 const $ = id => document.getElementById(id);

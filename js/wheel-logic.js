@@ -1,4 +1,4 @@
-/* Spin & Drink — wheel rules shared by the 3D page and the Node tests. */
+/* Cooler Drink — wheel rules shared by the 3D page and the Node tests. */
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory();
   else root.WheelLogic = factory();

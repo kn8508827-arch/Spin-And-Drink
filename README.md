@@ -1,4 +1,4 @@
-# Spin-And-Drink — កង់សំណាងជាក្រុម
+# Cooler Drink — កង់សំណាងជាក្រុម (Spin-And-Drink)
 
 A Khmer, mobile-first party wheel served by a small Node.js application.
 
